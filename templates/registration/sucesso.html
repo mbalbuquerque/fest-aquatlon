@@ -1,1 +1,73 @@
-<!doctype html><html lang="pt-BR"><body style="font-family:Arial;display:grid;place-items:center;min-height:100vh;background:#061a2a"><div style="background:#fff;padding:40px;border-radius:20px;max-width:560px;text-align:center"><h1>🎉 Inscrição recebida!</h1><h2>{{ inscricao.numero }}</h2><p>Atleta: {{ inscricao.nome }}</p><p>Modalidade: {{ inscricao.get_modalidade_display }}</p><p>Lote: {{ inscricao.lote }}</p><p><b>Total: R$ {{ inscricao.valor_total }}</b></p><p>Aguardando pagamento.</p><a href="/">Voltar ao evento</a></div></body></html>
+<!doctype html>
+
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <title>
+        Inscrição recebida
+    </title>
+
+</head>
+
+<body style="
+        font-family:Arial;
+        display:grid;
+        place-items:center;
+        min-height:100vh;
+        background:#061a2a;
+    ">
+
+    <div style="
+        background:#fff;
+        padding:40px;
+        border-radius:20px;
+        max-width:560px;
+        text-align:center;
+    ">
+
+        <h1>
+            🎉 Inscrição recebida!
+        </h1>
+
+        <h2>
+            {{ inscricao.numero }}
+        </h2>
+
+        <p>
+            Atleta:
+            {{ inscricao.nome }}
+        </p>
+
+        <p>
+            Modalidade:
+            {{ inscricao.get_modalidade_display }}
+        </p>
+
+        <p>
+            Lote:
+            {{ inscricao.lote }}
+        </p>
+
+        <p>
+            <b>
+                Total:
+                R$ {{ inscricao.valor_total }}
+            </b>
+        </p>
+
+        <p>
+            Sua inscrição foi registrada.
+        </p>
+
+        <a href="/">
+            Voltar ao evento
+        </a>
+
+    </div>
+
+</body>
+
+</html>

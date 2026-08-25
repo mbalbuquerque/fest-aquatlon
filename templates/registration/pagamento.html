@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>
+        Pagamento | Fest Aquathlon
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #061a2a;
+            color: #17202a;
+        }
+
+        .page {
+            min-height: 100vh;
+            padding: 50px 20px;
+        }
+
+        .card {
+            width: min(700px, 100%);
+            margin: auto;
+            background: white;
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 20px 50px rgba(0,0,0,.25);
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 900;
+            color: #061a2a;
+        }
+
+        .logo span {
+            color: #e7b900;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 25px 0 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #66727e;
+        }
+
+        .summary {
+            background: #f5f7f8;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 25px 0;
+            line-height: 1.8;
+        }
+
+        .price {
+            font-size: 34px;
+            font-weight: 900;
+            text-align: center;
+            color: #061a2a;
+            margin: 10px 0 25px;
+        }
+
+        .payment-btn {
+            display: block;
+            width: 100%;
+            padding: 17px;
+            margin-top: 12px;
+            border-radius: 12px;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 900;
+            font-size: 15px;
+        }
+
+        .mercado {
+            background: #ffd21a;
+            color: #061a2a;
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px;
+            background: #fff5c2;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+
+        .info {
+            text-align: center;
+            font-size: 12px;
+            color: #75828b;
+            margin-top: 20px;
+            line-height: 1.5;
+        }
+
+        .back {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #061a2a;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="page">
+
+    <div class="card">
+
+        <div class="logo">
+            FEST <span>AQUATHLON</span>
+        </div>
+
+        <h1>
+            Finalize sua inscrição
+        </h1>
+
+        <p class="subtitle">
+            Escolha pagar pelo Mercado Pago.
+        </p>
+
+        <div class="summary">
+
+            <strong>
+                Nº da inscrição:
+            </strong>
+
+            {{ inscricao.numero }}
+
+            <br>
+
+            <strong>
+                Atleta:
+            </strong>
+
+            {{ inscricao.nome }}
+
+            <br>
+
+            <strong>
+                Modalidade:
+            </strong>
+
+            {{ inscricao.get_modalidade_display }}
+
+            <br>
+
+            <strong>
+                Lote:
+            </strong>
+
+            {{ inscricao.lote }}
+
+        </div>
+
+        <div class="price">
+
+            R$ {{ inscricao.valor_total }}
+
+        </div>
+
+        <a
+            href="{{ pagamento.link_pagamento }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="payment-btn mercado"
+        >
+            PAGAR PELO MERCADO PAGO
+        </a>
+
+        <div class="status">
+
+            Status:
+            <strong>
+                {{ pagamento.get_status_display }}
+            </strong>
+
+        </div>
+
+        <p class="info">
+
+            Ao clicar no botão, você será direcionado
+            para o Mercado Pago, onde poderá concluir
+            o pagamento conforme as opções disponíveis
+            para esta cobrança.
+
+        </p>
+
+        <a
+            href="/"
+            class="back"
+        >
+            Voltar para o evento
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>
