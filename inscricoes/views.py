@@ -304,3 +304,221 @@ def sucesso(request, numero):
             "inscricao": inscricao,
         },
     )
+
+@staff_member_required
+def dashboard(request):
+
+    # ----------------------------
+    # INSCRIÇÕES
+    # ----------------------------
+
+    inscritos = (
+        Inscricao.objects
+        .exclude(
+            status=Inscricao.CANCELADO
+        )
+    )
+
+    total_inscricoes = inscritos.count()
+
+    total_canceladas = (
+        Inscricao.objects
+        .filter(
+            status=Inscricao.CANCELADO
+        )
+        .count()
+    )
+
+    # ----------------------------
+    # PAGAMENTOS
+    # ----------------------------
+
+    total_pagas = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PAGO
+        )
+        .count()
+    )
+
+    total_pendentes = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PENDENTE
+        )
+        .count()
+    )
+
+    total_pagamentos_cancelados = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.CANCELADO
+        )
+        .count()
+    )
+
+    # ----------------------------
+    # FINANCEIRO
+    # ----------------------------
+
+    recebido = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PAGO
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    a_receber = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PENDENTE
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    receita_prevista = (
+        recebido + a_receber
+    )
+
+    # ----------------------------
+    # VAGAS
+    # ----------------------------
+
+    vagas_totais = 180
+
+    vagas_restantes = max(
+        vagas_totais - total_inscricoes,
+        0
+    )
+
+    ocupacao = (
+        total_inscricoes / vagas_totais * 100
+        if vagas_totais
+        else 0
+    )
+
+    # ----------------------------
+    # MODALIDADES
+    # ----------------------------
+
+    mini_sprint = (
+        inscritos
+        .filter(
+            modalidade=Inscricao.MINI
+        )
+        .count()
+    )
+
+    sprint = (
+        inscritos
+        .filter(
+            modalidade=Inscricao.SPRINT
+        )
+        .count()
+    )
+
+    # ----------------------------
+    # FAIXAS ETÁRIAS
+    # ----------------------------
+
+    menor_17 = 0
+    idade_17_59 = 0
+    idade_60_mais = 0
+    total_militares = 0
+
+    for atleta in inscritos:
+
+        idade = atleta.idade_no_evento
+
+        if idade is None:
+            continue
+
+        if idade < 17:
+            menor_17 += 1
+
+        elif idade <= 59:
+            idade_17_59 += 1
+
+        else:
+            idade_60_mais += 1
+
+        if atleta.militar:
+            total_militares += 1
+
+    # ----------------------------
+    # PERCENTUAL DE PAGAMENTO
+    # ----------------------------
+
+    percentual_pagamentos = (
+        total_pagas / total_inscricoes * 100
+        if total_inscricoes
+        else 0
+    )
+
+    # ----------------------------
+    # CONTEXTO
+    # ----------------------------
+
+    contexto = {
+
+        "total_inscricoes": total_inscricoes,
+
+        "total_canceladas": total_canceladas,
+
+        "total_pagas": total_pagas,
+
+        "total_pendentes": total_pendentes,
+
+        "total_pagamentos_cancelados":
+            total_pagamentos_cancelados,
+
+        "recebido": recebido,
+
+        "a_receber": a_receber,
+
+        "receita_prevista":
+            receita_prevista,
+
+        "vagas_totais":
+            vagas_totais,
+
+        "vagas_restantes":
+            vagas_restantes,
+
+        "ocupacao":
+            round(ocupacao, 1),
+
+        "percentual_pagamentos":
+            round(percentual_pagamentos, 1),
+
+        "mini_sprint":
+            mini_sprint,
+
+        "sprint":
+            sprint,
+
+        "menor_17":
+            menor_17,
+
+        "idade_17_59":
+            idade_17_59,
+
+        "idade_60_mais":
+            idade_60_mais,
+
+        "total_militares":
+            total_militares,
+    }
+
+    return render(
+        request,
+        "inscricoes/dashboard.html",
+        contexto,
+    )

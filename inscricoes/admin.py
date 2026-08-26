@@ -1,7 +1,14 @@
 from django.contrib import admin
 from django.utils import timezone
 
-from .models import Inscricao, Pagamento
+from .models import (
+    Inscricao,
+    Pagamento,
+)
+
+from .pagamentos import (
+    obter_link_pagamento,
+)
 
 
 @admin.register(Inscricao)
@@ -14,7 +21,9 @@ class InscricaoAdmin(admin.ModelAdmin):
         "idade",
         "lote",
         "valor_total",
+        "status_pagamento",
         "status",
+        "militar",
         "criado_em",
     )
 
@@ -32,6 +41,10 @@ class InscricaoAdmin(admin.ModelAdmin):
         "telefone",
     )
 
+    ordering = (
+        "-criado_em",
+    )
+
     readonly_fields = (
         "numero",
         "lote",
@@ -41,9 +54,152 @@ class InscricaoAdmin(admin.ModelAdmin):
         "atualizado_em",
     )
 
-    @admin.display(description="Idade")
+    fieldsets = (
+
+        (
+            "Dados do atleta",
+            {
+                "fields": (
+                    "numero",
+                    "nome",
+                    "telefone",
+                    "email",
+                    "data_nascimento",
+                    "modalidade",
+                )
+            },
+        ),
+
+        (
+            "Condição especial",
+            {
+                "fields": (
+                    "militar",
+                    "comprovante_militar",
+                    "autorizacao_responsavel",
+                )
+            },
+        ),
+
+        (
+            "Financeiro",
+            {
+                "fields": (
+                    "lote",
+                    "valor_inscricao",
+                    "valor_total",
+                    "status",
+                )
+            },
+        ),
+
+        (
+            "Controle",
+            {
+                "fields": (
+                    "criado_em",
+                    "atualizado_em",
+                )
+            },
+        ),
+
+    )
+
+    @admin.display(
+        description="Idade"
+    )
     def idade(self, obj):
+
         return obj.idade_no_evento
+
+    @admin.display(
+        description="Pagamento"
+    )
+    def status_pagamento(self, obj):
+
+        try:
+
+            pagamento = obj.pagamento
+
+        except Pagamento.DoesNotExist:
+
+            return "Sem pagamento"
+
+        return pagamento.get_status_display()
+
+    def save_model(
+        self,
+        request,
+        obj,
+        form,
+        change,
+    ):
+
+        # Salva a inscrição
+        super().save_model(
+            request,
+            obj,
+            form,
+            change,
+        )
+
+        # Verifica se existe pagamento
+        try:
+
+            pagamento = obj.pagamento
+
+        except Pagamento.DoesNotExist:
+
+            # Cria automaticamente
+            pagamento = Pagamento.objects.create(
+
+                inscricao=obj,
+
+                valor=obj.valor_total,
+
+                link_pagamento=(
+                    obter_link_pagamento(obj)
+                ),
+
+                status=Pagamento.PENDENTE,
+            )
+
+        # Sincronização
+        # Inscrição → Pagamento
+
+        if obj.status == Inscricao.PAGO:
+
+            pagamento.status = (
+                Pagamento.PAGO
+            )
+
+            if not pagamento.pago_em:
+
+                pagamento.pago_em = (
+                    timezone.now()
+                )
+
+        elif obj.status == Inscricao.CANCELADO:
+
+            pagamento.status = (
+                Pagamento.CANCELADO
+            )
+
+            pagamento.pago_em = None
+
+        else:
+
+            pagamento.status = (
+                Pagamento.PENDENTE
+            )
+
+            pagamento.pago_em = None
+
+        pagamento.valor = (
+            obj.valor_total
+        )
+
+        pagamento.save()
 
 
 @admin.register(Pagamento)
@@ -76,32 +232,42 @@ class PagamentoAdmin(admin.ModelAdmin):
         "atualizado_em",
     )
 
-    def save_model(self, request, obj, form, change):
+    def save_model(
+        self,
+        request,
+        obj,
+        form,
+        change,
+    ):
 
         if obj.status == Pagamento.PAGO:
-            obj.pago_em = obj.pago_em or timezone.now()
 
-            obj.inscricao.status = Inscricao.PAGO
-            obj.inscricao.save(
-                update_fields=[
-                    "status",
-                    "atualizado_em",
-                ]
+            obj.pago_em = (
+                obj.pago_em
+                or timezone.now()
             )
 
-        elif obj.status in [
-            Pagamento.PENDENTE,
-            Pagamento.CANCELADO,
-            Pagamento.EXPIRADO,
-        ]:
-            obj.inscricao.status = Inscricao.PENDENTE
-
-            obj.inscricao.save(
-                update_fields=[
-                    "status",
-                    "atualizado_em",
-                ]
+            obj.inscricao.status = (
+                Inscricao.PAGO
             )
+
+        elif obj.status == Pagamento.CANCELADO:
+
+            obj.inscricao.status = (
+                Inscricao.CANCELADO
+            )
+
+            obj.pago_em = None
+
+        else:
+
+            obj.inscricao.status = (
+                Inscricao.PENDENTE
+            )
+
+            obj.pago_em = None
+
+        obj.inscricao.save()
 
         super().save_model(
             request,
