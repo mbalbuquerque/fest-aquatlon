@@ -1,9 +1,7 @@
 from django.contrib import admin
+from django.utils import timezone
 
-from .models import (
-    Inscricao,
-    Pagamento,
-)
+from .models import Inscricao, Pagamento
 
 
 @admin.register(Inscricao)
@@ -43,9 +41,7 @@ class InscricaoAdmin(admin.ModelAdmin):
         "atualizado_em",
     )
 
-    @admin.display(
-        description="Idade"
-    )
+    @admin.display(description="Idade")
     def idade(self, obj):
         return obj.idade_no_evento
 
@@ -79,3 +75,37 @@ class PagamentoAdmin(admin.ModelAdmin):
         "criado_em",
         "atualizado_em",
     )
+
+    def save_model(self, request, obj, form, change):
+
+        if obj.status == Pagamento.PAGO:
+            obj.pago_em = obj.pago_em or timezone.now()
+
+            obj.inscricao.status = Inscricao.PAGO
+            obj.inscricao.save(
+                update_fields=[
+                    "status",
+                    "atualizado_em",
+                ]
+            )
+
+        elif obj.status in [
+            Pagamento.PENDENTE,
+            Pagamento.CANCELADO,
+            Pagamento.EXPIRADO,
+        ]:
+            obj.inscricao.status = Inscricao.PENDENTE
+
+            obj.inscricao.save(
+                update_fields=[
+                    "status",
+                    "atualizado_em",
+                ]
+            )
+
+        super().save_model(
+            request,
+            obj,
+            form,
+            change,
+        )

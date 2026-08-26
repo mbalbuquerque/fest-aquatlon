@@ -1,0 +1,366 @@
+<!doctype html>
+
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>
+        Dashboard | Fest Aquathlon
+    </title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #17202a;
+        }
+
+        .top {
+            background: #061a2a;
+            color: white;
+            padding: 22px;
+        }
+
+        .top-inner {
+            width: min(1200px, calc(100% - 30px));
+            margin: auto;
+        }
+
+        .top h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .top p {
+            margin: 6px 0 0;
+            color: #b8c8d1;
+        }
+
+        .container {
+            width: min(1200px, calc(100% - 30px));
+            margin: 30px auto;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns:
+                repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow:
+                0 8px 25px rgba(0, 0, 0, .06);
+        }
+
+        .label {
+            color: #71808b;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .value {
+            margin-top: 10px;
+            font-size: 31px;
+            font-weight: 900;
+            color: #061a2a;
+        }
+
+        .section {
+            margin-top: 25px;
+        }
+
+        .section h2 {
+            margin-bottom: 15px;
+        }
+
+        .finance {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .finance .card:first-child {
+            border-left: 5px solid #18a56b;
+        }
+
+        .finance .card:last-child {
+            border-left: 5px solid #d6a900;
+        }
+
+        .sports {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .sport {
+            background: #061a2a;
+            color: white;
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        .sport strong {
+            font-size: 32px;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .actions {
+            margin-top: 25px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 13px 18px;
+            border-radius: 10px;
+            background: #ffd21a;
+            color: #061a2a;
+            text-decoration: none;
+            font-weight: 900;
+        }
+
+        .button.dark {
+            background: #061a2a;
+            color: white;
+        }
+
+        @media (max-width: 900px) {
+
+            .cards {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .cards,
+            .finance,
+            .sports {
+                grid-template-columns: 1fr;
+            }
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <header class="top">
+
+        <div class="top-inner">
+
+            <h1>
+                FEST AQUATHLON 2026
+            </h1>
+
+            <p>
+                Dashboard administrativo
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <div class="label">
+                Receita prevista
+            </div>
+
+            <div class="value">
+                R$ {{ receita_prevista }}
+            </div>
+
+        </div>
+
+    </header>
+
+
+    <main class="container">
+
+
+        <section class="cards">
+
+            <div class="card">
+
+                <div class="label">
+                    Inscritos
+                </div>
+
+                <div class="value">
+                    {{ total_inscricoes }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    Pagamentos pagos
+                </div>
+
+                <div class="value">
+                    {{ total_pagas }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    Pendentes
+                </div>
+
+                <div class="value">
+                    {{ total_pendentes }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    Vagas restantes
+                </div>
+
+                <div class="value">
+                    {{ vagas_restantes }}
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="section">
+
+            <h2>
+                Financeiro
+            </h2>
+
+            <div class="finance">
+
+                <div class="card">
+
+                    <div class="label">
+                        Total recebido
+                    </div>
+
+                    <div class="value">
+                        R$ {{ recebido }}
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="label">
+                        A receber
+                    </div>
+
+                    <div class="value">
+                        R$ {{ a_receber }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="section">
+
+            <h2>
+                Modalidades
+            </h2>
+
+            <div class="sports">
+
+                <div class="sport">
+
+                    <div>
+                        MINI SPRINT
+                    </div>
+
+                    <strong>
+                        {{ mini_sprint }}
+                    </strong>
+
+                    <div>
+                        atletas
+                    </div>
+
+                </div>
+
+
+                <div class="sport">
+
+                    <div>
+                        SPRINT
+                    </div>
+
+                    <strong>
+                        {{ sprint }}
+                    </strong>
+
+                    <div>
+                        atletas
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="section">
+
+            <div class="actions">
+
+                <a href="/admin/inscricoes/inscricao/" class="button">
+                    VER INSCRIÇÕES
+                </a>
+                </a>
+
+                <a href="/admin/inscricoes/pagamento/" class="button dark">
+                    VER PAGAMENTOS
+                </a>
+
+                <a href="/admin/" class="button">
+                    PAINEL ADMINISTRATIVO
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>

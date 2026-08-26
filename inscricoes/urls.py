@@ -27,10 +27,16 @@ urlpatterns = [
         views.sucesso,
         name="sucesso",
     ),
-    
+
     path(
-    "webhooks/mercadopago/",
-    views.webhook_mercadopago,
-    name="webhook_mercadopago",
-),
+        "webhooks/mercadopago/",
+        views.webhook_mercadopago,
+        name="webhook_mercadopago",
+    ),
+
+    path(
+        "dashboard/",
+        views.dashboard,
+        name="dashboard",
+    ),
 ]

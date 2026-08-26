@@ -117,8 +117,10 @@ class Inscricao(models.Model):
 
     @property
     def idade_no_evento(self):
-        nascimento = self.data_nascimento
+        if not self.data_nascimento:
+            return None
 
+        nascimento = self.data_nascimento
         idade = EVENT_DATE.year - nascimento.year
 
         if (
@@ -133,26 +135,20 @@ class Inscricao(models.Model):
         return idade
 
     def definir_valor(self):
-        """
-        Define lote, valor e link de pagamento
-        conforme a data, idade e condição do atleta.
-        """
+        if not self.data_nascimento:
+            return
 
         data = timezone.localdate()
         idade = self.idade_no_evento
 
         if data > LOT_END:
-            raise ValidationError(
-                "As inscrições estão encerradas."
-            )
+            raise ValidationError("As inscrições estão encerradas.")
 
         # LOTE PROMOCIONAL
         if data <= PROMO_END:
             self.lote = "Promocional"
-
             self.valor_inscricao = Decimal("154.00")
             self.valor_total = Decimal("154.00")
-
             return
 
         # SEGUNDO LOTE
@@ -176,6 +172,9 @@ class Inscricao(models.Model):
     def clean(self):
         idade = self.idade_no_evento
 
+        if idade is None:
+            return
+
         if idade < 12:
             raise ValidationError(
                 "A idade mínima é 12 anos completos em 2026."
@@ -193,16 +192,13 @@ class Inscricao(models.Model):
             )
 
     def save(self, *args, **kwargs):
-
         creating = not self.pk
 
         if creating:
             super().save(*args, **kwargs)
-
             self.numero = f"FA26-{self.pk:04d}"
 
         self.definir_valor()
-
         super().save(*args, **kwargs)
 
 
@@ -254,10 +250,10 @@ class Pagamento(models.Model):
     )
 
     identificador_transacao = models.CharField(
-    max_length=150,
-    blank=True,
-    db_index=True,
-)
+        max_length=150,
+        blank=True,
+        db_index=True,
+    )
 
     criado_em = models.DateTimeField(
         auto_now_add=True,
