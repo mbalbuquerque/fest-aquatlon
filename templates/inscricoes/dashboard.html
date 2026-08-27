@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="pt-BR">
 
 <head>
@@ -63,8 +62,27 @@
 
         .grid {
             display: grid;
+
             grid-template-columns:
                 repeat(4, 1fr);
+
+            gap: 18px;
+        }
+
+        .three {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 18px;
+        }
+
+        .two {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
 
             gap: 18px;
         }
@@ -72,17 +90,19 @@
         .card {
             background: white;
             padding: 22px;
+
             border-radius: 16px;
 
             box-shadow:
                 0 8px 25px
-                rgba(0,0,0,.06);
+                rgba(0, 0, 0, .06);
         }
 
         .label {
             font-size: 12px;
             text-transform: uppercase;
             font-weight: bold;
+
             color: #72818b;
         }
 
@@ -98,12 +118,18 @@
         .money {
             font-size: 28px;
             font-weight: 900;
+
             color: #087443;
+
             margin-top: 10px;
         }
 
         .money.pending {
             color: #b18200;
+        }
+
+        .money.expense {
+            color: #a32d2d;
         }
 
         .section {
@@ -112,47 +138,6 @@
 
         .section-title {
             margin-bottom: 15px;
-        }
-
-        .two {
-            display: grid;
-
-            grid-template-columns:
-                1fr 1fr;
-
-            gap: 18px;
-        }
-
-        .three {
-            display: grid;
-
-            grid-template-columns:
-                repeat(3, 1fr);
-
-            gap: 18px;
-        }
-
-        .sport {
-            background: #061a2a;
-            color: white;
-
-            border-radius: 16px;
-
-            padding: 25px;
-        }
-
-        .sport h3 {
-            margin: 0;
-        }
-
-        .sport strong {
-            display: block;
-
-            font-size: 36px;
-
-            margin-top: 15px;
-
-            color: #ffd21a;
         }
 
         .progress {
@@ -173,6 +158,26 @@
             background: #ffd21a;
 
             width: {{ ocupacao }}%;
+        }
+
+        .sport {
+            background: #061a2a;
+
+            color: white;
+
+            border-radius: 16px;
+
+            padding: 25px;
+        }
+
+        .sport strong {
+            display: block;
+
+            font-size: 36px;
+
+            margin-top: 15px;
+
+            color: #ffd21a;
         }
 
         .actions {
@@ -204,23 +209,42 @@
             color: white;
         }
 
-        @media(max-width:900px) {
+        .info-box {
+            padding: 15px;
+
+            background: #fff9dc;
+
+            border-radius: 10px;
+
+            color: #6c5700;
+
+            font-size: 13px;
+
+            margin-top: 15px;
+        }
+
+        @media(max-width: 900px) {
 
             .grid,
-            .three {
+            .three,
+            .two {
+
                 grid-template-columns:
-                    repeat(2,1fr);
+                    repeat(2, 1fr);
+
             }
 
         }
 
-        @media(max-width:600px) {
+        @media(max-width: 600px) {
 
             .grid,
-            .two,
-            .three {
+            .three,
+            .two {
+
                 grid-template-columns:
                     1fr;
+
             }
 
         }
@@ -248,10 +272,86 @@
 </header>
 
 
+<!-- ==============================
+         ACESSOS
+    =============================== -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Acessos rápidos
+        </h2>
+
+        <div class="actions">
+
+
+            <a
+                href="/admin/inscricoes/inscricao/"
+                class="button"
+            >
+                PARTICIPANTES
+            </a>
+
+
+            <a
+                href="/admin/inscricoes/pagamento/"
+                class="button dark"
+            >
+                PAGAMENTOS
+            </a>
+
+
+            <a
+                href="/admin/inscricoes/contareceber/"
+                class="button"
+            >
+                CONTAS A RECEBER
+            </a>
+
+
+            <a
+                href="/admin/inscricoes/contapagar/"
+                class="button dark"
+            >
+                CONTAS A PAGAR
+            </a>
+
+
+            <a
+                href="/admin/inscricoes/fornecedor/"
+                class="button"
+            >
+                FORNECEDORES
+            </a>
+
+
+            <a
+                href="/admin/"
+                class="button dark"
+            >
+                ADMINISTRATIVO
+            </a>
+
+
+        </div>
+
+    </section>
+
+
+</main>
+
+</body>
+
+</html>
+
+
 <main class="container">
 
 
-    <!-- CARDS PRINCIPAIS -->
+
+    <!-- ==============================
+         CARDS PRINCIPAIS
+    =============================== -->
 
     <section class="grid">
 
@@ -310,14 +410,15 @@
     </section>
 
 
-    <!-- FINANCEIRO -->
+    <!-- ==============================
+         RECEITAS
+    =============================== -->
 
     <section class="section">
 
         <h2 class="section-title">
-            Financeiro
+            Receitas
         </h2>
-
 
         <div class="three">
 
@@ -360,170 +461,62 @@
 
             </div>
 
-            <section class="section">
-
-    <h2 class="section-title">
-        Financeiro
-    </h2>
-
-    <div class="three">
-
-        <div class="card">
-
-            <div class="label">
-                Recebido
-            </div>
-
-            <div class="money">
-                R$ {{ recebido }}
-            </div>
 
         </div>
 
-        <div class="card">
+    </section>
 
-            <div class="label">
-                A receber
+
+    <!-- ==============================
+         DESPESAS
+    =============================== -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Contas a pagar
+        </h2>
+
+        <div class="three">
+
+
+            <div class="card">
+
+                <div class="label">
+                    Contas pagas
+                </div>
+
+                <div class="money">
+                    R$ {{ contas_pagas }}
+                </div>
+
             </div>
 
-            <div class="money pending">
-                R$ {{ a_receber }}
+
+            <div class="card">
+
+                <div class="label">
+                    Contas pendentes
+                </div>
+
+                <div class="money expense">
+                    R$ {{ contas_pendentes }}
+                </div>
+
             </div>
 
-        </div>
 
-        <div class="card">
+            <div class="card">
 
-            <div class="label">
-                Receita prevista
+                <div class="label">
+                    Contas vencidas
+                </div>
+
+                <div class="money expense">
+                    R$ {{ contas_vencidas }}
+                </div>
+
             </div>
-
-            <div class="money">
-                R$ {{ receita_prevista }}
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-<section class="section">
-
-    <h2 class="section-title">
-        Despesas
-    </h2>
-
-    <div class="three">
-
-        <div class="card">
-
-            <div class="label">
-                Contas pagas
-            </div>
-
-            <div class="money">
-                R$ {{ contas_pagas }}
-            </div>
-
-        </div>
-
-        <div class="card">
-
-            <div class="label">
-                Contas pendentes
-            </div>
-
-            <div class="money pending">
-                R$ {{ contas_pendentes }}
-            </div>
-
-        </div>
-
-        <div class="card">
-
-            <div class="label">
-                Contas vencidas
-            </div>
-
-            <div class="money pending">
-                R$ {{ contas_vencidas }}
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-<section class="section">
-
-    <h2 class="section-title">
-        Resultado
-    </h2>
-
-    <div class="two">
-
-        <div class="card">
-
-            <div class="label">
-                Saldo atual
-            </div>
-
-            <div class="money">
-                R$ {{ saldo_atual }}
-            </div>
-
-        </div>
-
-        <div class="card">
-
-            <div class="label">
-                Resultado previsto
-            </div>
-
-            <div class="money">
-                R$ {{ resultado_previsto }}
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-<section class="section">
-
-    <h2 class="section-title">
-        Financeiro
-    </h2>
-
-    <div class="actions">
-
-        <a
-            href="/admin/inscricoes/contareceber/"
-            class="button"
-        >
-            📥 CONTAS A RECEBER
-        </a>
-
-        <a
-            href="/admin/inscricoes/contapagar/"
-            class="button dark"
-        >
-            📤 CONTAS A PAGAR
-        </a>
-
-        <a
-            href="/admin/inscricoes/fornecedor/"
-            class="button"
-        >
-            🏢 FORNECEDORES
-        </a>
-
-    </div>
-
-</section>
 
 
         </div>
@@ -531,7 +524,63 @@
     </section>
 
 
-    <!-- OCUPAÇÃO -->
+    <!-- ==============================
+         RESULTADO
+    =============================== -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Resultado financeiro
+        </h2>
+
+        <div class="two">
+
+
+            <div class="card">
+
+                <div class="label">
+                    Saldo atual
+                </div>
+
+                <div class="money">
+                    R$ {{ saldo_atual }}
+                </div>
+
+                <div class="info-box">
+                    Receitas recebidas menos contas
+                    efetivamente pagas.
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    Resultado previsto
+                </div>
+
+                <div class="money">
+                    R$ {{ resultado_previsto }}
+                </div>
+
+                <div class="info-box">
+                    Receita prevista menos todas as
+                    despesas cadastradas.
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ==============================
+         OCUPAÇÃO
+    =============================== -->
 
     <section class="section">
 
@@ -551,12 +600,21 @@
 
             </div>
 
+            <p>
+                {{ total_inscricoes }}
+                de
+                {{ vagas_totais }}
+                vagas ocupadas.
+            </p>
+
         </div>
 
     </section>
 
 
-    <!-- MODALIDADES -->
+    <!-- ==============================
+         MODALIDADES
+    =============================== -->
 
     <section class="section">
 
@@ -606,14 +664,15 @@
     </section>
 
 
-    <!-- PERFIL DOS PARTICIPANTES -->
+    <!-- ==============================
+         PERFIL
+    =============================== -->
 
     <section class="section">
 
         <h2 class="section-title">
             Perfil dos participantes
         </h2>
-
 
         <div class="three">
 
@@ -698,44 +757,4 @@
     </section>
 
 
-    <!-- AÇÕES -->
-
-    <section class="section">
-
-        <div class="actions">
-
-
-            <a
-                href="/admin/inscricoes/inscricao/"
-                class="button"
-            >
-                👥 PARTICIPANTES
-            </a>
-
-
-            <a
-                href="/admin/inscricoes/pagamento/"
-                class="button dark"
-            >
-                💳 PAGAMENTOS
-            </a>
-
-
-            <a
-                href="/admin/"
-                class="button"
-            >
-                ⚙ ADMINISTRATIVO
-            </a>
-
-
-        </div>
-
-    </section>
-
-
-</main>
-
-</body>
-
-</html>
+    
