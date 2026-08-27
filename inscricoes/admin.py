@@ -4,6 +4,9 @@ from django.utils import timezone
 from .models import (
     Inscricao,
     Pagamento,
+    Fornecedor,
+    ContaPagar,
+    ContaReceber,
 )
 
 from .pagamentos import (
@@ -275,3 +278,79 @@ class PagamentoAdmin(admin.ModelAdmin):
             form,
             change,
         )
+        
+@admin.register(Fornecedor)
+class FornecedorAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "nome",
+        "documento",
+        "telefone",
+        "email",
+        "ativo",
+    )
+
+    list_filter = (
+        "ativo",
+    )
+
+    search_fields = (
+        "nome",
+        "documento",
+        "email",
+        "telefone",
+    )
+
+
+@admin.register(ContaPagar)
+class ContaPagarAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "descricao",
+        "fornecedor",
+        "categoria",
+        "valor",
+        "vencimento",
+        "status",
+        "pago_em",
+    )
+
+    list_filter = (
+        "status",
+        "categoria",
+        "fornecedor",
+    )
+
+    search_fields = (
+        "descricao",
+        "fornecedor__nome",
+    )
+
+    date_hierarchy = "vencimento"
+
+
+@admin.register(ContaReceber)
+class ContaReceberAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "descricao",
+        "categoria",
+        "valor",
+        "vencimento",
+        "status",
+        "recebido_em",
+        "inscricao",
+    )
+
+    list_filter = (
+        "status",
+        "categoria",
+    )
+
+    search_fields = (
+        "descricao",
+        "inscricao__numero",
+        "inscricao__nome",
+    )
+
+    date_hierarchy = "vencimento"

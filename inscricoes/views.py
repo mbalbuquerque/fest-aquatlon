@@ -1,44 +1,365 @@
-import hashlib
-import hmac
-import os
-
-import requests
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Sum
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import (
+    get_object_or_404,
+    redirect,
+    render,
+)
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
+import hashlib
+import hmac
+import os
+import requests
+
 from .forms import InscricaoForm
-from .models import Inscricao, Pagamento
-from .pagamentos import obter_link_pagamento
+
+from .models import (
+    Inscricao,
+    Pagamento,
+    ContaPagar,
+    ContaReceber,
+)
 
 
 @staff_member_required
 def dashboard(request):
-    total_inscricoes = (
-        Inscricao.objects.exclude(status=Inscricao.CANCELADO).count()
+
+    # =====================================
+    # INSCRIÇÕES
+    # =====================================
+
+    inscritos = (
+        Inscricao.objects
+        .exclude(
+            status=Inscricao.CANCELADO
+        )
     )
 
-    total_pagas = Pagamento.objects.filter(status=Pagamento.PAGO).count()
-    total_pendentes = Pagamento.objects.filter(
-        status=Pagamento.PENDENTE
-    ).count()
-    total_cancelados = Pagamento.objects.filter(
-        status=Pagamento.CANCELADO
-    ).count()
+    total_inscricoes = inscritos.count()
+
+    total_pagas = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PAGO
+        )
+        .count()
+    )
+
+    total_pendentes = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PENDENTE
+        )
+        .count()
+    )
+
+    # =====================================
+    # VAGAS
+    # =====================================
+
+    vagas_totais = 180
+
+    vagas_restantes = max(
+        vagas_totais - total_inscricoes,
+        0
+    )
+
+    ocupacao = (
+        total_inscricoes
+        / vagas_totais
+        * 100
+        if vagas_totais
+        else 0
+    )
+
+    # =====================================
+    # RECEITAS
+    # =====================================
+
+    recebido_pagamentos = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PAGO
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    recebido_extra = (
+        ContaReceber.objects
+        .filter(
+            status=ContaReceber.RECEBIDO
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
 
     recebido = (
-        Pagamento.objects.filter(status=Pagamento.PAGO)
-        .aggregate(total=Sum("valor"))["total"]
+        recebido_pagamentos
+        + recebido_extra
+    )
+
+    # =====================================
+    # A RECEBER
+    # =====================================
+
+    a_receber_pagamentos = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PENDENTE
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    a_receber_extra = (
+        ContaReceber.objects
+        .filter(
+            status=ContaReceber.PENDENTE
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
         or 0
     )
 
     a_receber = (
-        Pagamento.objects.filter(status=Pagamento.PENDENTE)
-        .aggregate(total=Sum("valor"))["total"]
+        a_receber_pagamentos
+        + a_receber_extra
+    )
+
+    receita_prevista = (
+        recebido
+        + a_receber
+    )
+
+    # =====================================
+    # CONTAS A PAGAR
+    # =====================================
+
+    contas_pagas = (
+        ContaPagar.objects
+        .filter(
+            status=ContaPagar.PAGO
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
         or 0
+    )
+
+    contas_pendentes = (
+        ContaPagar.objects
+        .filter(
+            status=ContaPagar.PENDENTE
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    contas_vencidas = (
+        ContaPagar.objects
+        .filter(
+            status=ContaPagar.VENCIDO
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    total_despesas = (
+        contas_pagas
+        + contas_pendentes
+        + contas_vencidas
+    )
+
+    # =====================================
+    # SALDO
+    # =====================================
+
+    saldo_atual = (
+        recebido
+        - contas_pagas
+    )
+
+    resultado_previsto = (
+        receita_prevista
+        - total_despesas
+    )
+
+    # =====================================
+    # MODALIDADES
+    # =====================================
+
+    mini_sprint = (
+        inscritos
+        .filter(
+            modalidade=Inscricao.MINI
+        )
+        .count()
+    )
+
+    sprint = (
+        inscritos
+        .filter(
+            modalidade=Inscricao.SPRINT
+        )
+        .count()
+    )
+
+    # =====================================
+    # FAIXAS
+    # =====================================
+
+    menor_17 = 0
+    idade_17_59 = 0
+    idade_60_mais = 0
+    total_militares = 0
+
+    for atleta in inscritos:
+
+        idade = atleta.idade_no_evento
+
+        if idade is None:
+            continue
+
+        if idade < 17:
+
+            menor_17 += 1
+
+        elif idade <= 59:
+
+            idade_17_59 += 1
+
+        else:
+
+            idade_60_mais += 1
+
+        if atleta.militar:
+
+            total_militares += 1
+
+    # =====================================
+    # ÚLTIMOS LANÇAMENTOS
+    # =====================================
+
+    ultimas_contas_pagar = (
+        ContaPagar.objects
+        .select_related("fornecedor")
+        .order_by("-criado_em")[:5]
+    )
+
+    ultimas_contas_receber = (
+        ContaReceber.objects
+        .order_by("-criado_em")[:5]
+    )
+
+    # =====================================
+    # PAGAMENTOS
+    # =====================================
+
+    percentual_pagamentos = (
+        total_pagas
+        / total_inscricoes
+        * 100
+        if total_inscricoes
+        else 0
+    )
+
+    contexto = {
+
+        "total_inscricoes":
+            total_inscricoes,
+
+        "total_pagas":
+            total_pagas,
+
+        "total_pendentes":
+            total_pendentes,
+
+        "vagas_restantes":
+            vagas_restantes,
+
+        "ocupacao":
+            round(
+                ocupacao,
+                1
+            ),
+
+        "recebido":
+            recebido,
+
+        "a_receber":
+            a_receber,
+
+        "receita_prevista":
+            receita_prevista,
+
+        "contas_pagas":
+            contas_pagas,
+
+        "contas_pendentes":
+            contas_pendentes,
+
+        "contas_vencidas":
+            contas_vencidas,
+
+        "total_despesas":
+            total_despesas,
+
+        "saldo_atual":
+            saldo_atual,
+
+        "resultado_previsto":
+            resultado_previsto,
+
+        "mini_sprint":
+            mini_sprint,
+
+        "sprint":
+            sprint,
+
+        "menor_17":
+            menor_17,
+
+        "idade_17_59":
+            idade_17_59,
+
+        "idade_60_mais":
+            idade_60_mais,
+
+        "total_militares":
+            total_militares,
+
+        "percentual_pagamentos":
+            round(
+                percentual_pagamentos,
+                1
+            ),
+
+        "ultimas_contas_pagar":
+            ultimas_contas_pagar,
+
+        "ultimas_contas_receber":
+            ultimas_contas_receber,
+    }
+
+    return render(
+        request,
+        "inscricoes/dashboard.html",
+        contexto,
     )
 
     receita_prevista = recebido + a_receber

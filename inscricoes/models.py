@@ -278,3 +278,206 @@ class Pagamento(models.Model):
             f"{self.inscricao.numero} - "
             f"R$ {self.valor}"
         )
+        
+class Fornecedor(models.Model):
+    nome = models.CharField(
+        max_length=150
+    )
+
+    documento = models.CharField(
+        max_length=30,
+        blank=True
+    )
+
+    telefone = models.CharField(
+        max_length=30,
+        blank=True
+    )
+
+    email = models.EmailField(
+        blank=True
+    )
+
+    endereco = models.CharField(
+        max_length=255,
+        blank=True
+    )
+
+    observacao = models.TextField(
+        blank=True
+    )
+
+    ativo = models.BooleanField(
+        default=True
+    )
+
+    criado_em = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    atualizado_em = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = ["nome"]
+        verbose_name = "Fornecedor"
+        verbose_name_plural = "Fornecedores"
+
+    def __str__(self):
+        return self.nome
+
+
+class ContaPagar(models.Model):
+
+    PENDENTE = "PENDENTE"
+    PAGO = "PAGO"
+    VENCIDO = "VENCIDO"
+    CANCELADO = "CANCELADO"
+
+    STATUS = [
+        (PENDENTE, "Pendente"),
+        (PAGO, "Pago"),
+        (VENCIDO, "Vencida"),
+        (CANCELADO, "Cancelada"),
+    ]
+
+    fornecedor = models.ForeignKey(
+        Fornecedor,
+        on_delete=models.PROTECT,
+        related_name="contas_pagar"
+    )
+
+    descricao = models.CharField(
+        max_length=200
+    )
+
+    categoria = models.CharField(
+        max_length=100,
+        default="Outros"
+    )
+
+    valor = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    vencimento = models.DateField()
+
+    pago_em = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    status = models.CharField(
+        max_length=12,
+        choices=STATUS,
+        default=PENDENTE
+    )
+
+    forma_pagamento = models.CharField(
+        max_length=50,
+        blank=True
+    )
+
+    comprovante = models.FileField(
+        upload_to="financeiro/contas_pagar/",
+        blank=True,
+        null=True
+    )
+
+    observacao = models.TextField(
+        blank=True
+    )
+
+    criado_em = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    atualizado_em = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = ["vencimento"]
+        verbose_name = "Conta a pagar"
+        verbose_name_plural = "Contas a pagar"
+
+    def __str__(self):
+        return (
+            f"{self.fornecedor.nome} - "
+            f"R$ {self.valor}"
+        )
+
+
+class ContaReceber(models.Model):
+
+    PENDENTE = "PENDENTE"
+    RECEBIDO = "RECEBIDO"
+    VENCIDO = "VENCIDO"
+    CANCELADO = "CANCELADO"
+
+    STATUS = [
+        (PENDENTE, "Pendente"),
+        (RECEBIDO, "Recebido"),
+        (VENCIDO, "Vencido"),
+        (CANCELADO, "Cancelado"),
+    ]
+
+    descricao = models.CharField(
+        max_length=200
+    )
+
+    categoria = models.CharField(
+        max_length=100,
+        default="Outros"
+    )
+
+    valor = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    vencimento = models.DateField()
+
+    recebido_em = models.DateField(
+        null=True,
+        blank=True
+    )
+
+    status = models.CharField(
+        max_length=12,
+        choices=STATUS,
+        default=PENDENTE
+    )
+
+    inscricao = models.ForeignKey(
+        "Inscricao",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="contas_receber"
+    )
+
+    observacao = models.TextField(
+        blank=True
+    )
+
+    criado_em = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    atualizado_em = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = ["vencimento"]
+        verbose_name = "Conta a receber"
+        verbose_name_plural = "Contas a receber"
+
+    def __str__(self):
+        return (
+            f"{self.descricao} - "
+            f"R$ {self.valor}"
+        )
