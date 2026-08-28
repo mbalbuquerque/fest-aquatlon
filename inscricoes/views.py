@@ -1,16 +1,17 @@
+from datetime import datetime
+import hashlib
+import hmac
+import json
+import os
+
+import requests
+
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from datetime import datetime
-
-
-import hashlib
-import hmac
-import os
-import requests
 
 from .forms import InscricaoForm
 from .models import (
@@ -19,6 +20,7 @@ from .models import (
     ContaPagar,
     ContaReceber,
 )
+from .pagamentos import obter_link_pagamento
 
 
 def home(request):
@@ -29,6 +31,10 @@ def home(request):
 
 
 def nova_inscricao(request):
+    """
+    Cadastro público do atleta.
+    Cria a inscrição e, em seguida, o respectivo pagamento.
+    """
 
     vagas = (
         180
@@ -53,8 +59,32 @@ def nova_inscricao(request):
         inscricao = form.save(
             commit=False
         )
-
         inscricao.save()
+
+        # Cria o pagamento da inscrição.
+        pagamento, _ = Pagamento.objects.get_or_create(
+            inscricao=inscricao,
+            defaults={
+                "valor": inscricao.valor_total,
+                "link_pagamento": obter_link_pagamento(
+                    inscricao
+                ),
+                "status": Pagamento.PENDENTE,
+            },
+        )
+
+        # Garante que o valor/link acompanhem a inscrição.
+        pagamento.valor = inscricao.valor_total
+        pagamento.link_pagamento = obter_link_pagamento(
+            inscricao
+        )
+        pagamento.save(
+            update_fields=[
+                "valor",
+                "link_pagamento",
+                "atualizado_em",
+            ]
+        )
 
         return redirect(
             "pagamento",
@@ -72,15 +102,20 @@ def nova_inscricao(request):
 
 
 def pagamento(request, numero):
-
     inscricao = get_object_or_404(
         Inscricao,
         numero=numero,
     )
 
-    pagamento = get_object_or_404(
-        Pagamento,
+    pagamento, _ = Pagamento.objects.get_or_create(
         inscricao=inscricao,
+        defaults={
+            "valor": inscricao.valor_total,
+            "link_pagamento": obter_link_pagamento(
+                inscricao
+            ),
+            "status": Pagamento.PENDENTE,
+        },
     )
 
     return render(
@@ -94,7 +129,6 @@ def pagamento(request, numero):
 
 
 def sucesso(request, numero):
-
     inscricao = get_object_or_404(
         Inscricao,
         numero=numero,
@@ -111,6 +145,11 @@ def sucesso(request, numero):
 
 @staff_member_required
 def dashboard(request):
+    """
+    Dashboard principal do evento.
+    Consolida inscrições, pagamentos, receitas extras,
+    contas a pagar e indicadores.
+    """
 
     hoje = timezone.localdate()
 
@@ -127,247 +166,96 @@ def dashboard(request):
 
     total_inscricoes = inscritos.count()
 
-@staff_member_required
-def extrato_financeiro(request):
-
-    hoje = timezone.localdate()
-
-    # Período padrão: mês atual
-    inicio_str = request.GET.get("inicio")
-    fim_str = request.GET.get("fim")
-
-    if inicio_str:
-        try:
-            inicio = datetime.strptime(
-                inicio_str,
-                "%Y-%m-%d"
-            ).date()
-        except ValueError:
-            inicio = hoje.replace(day=1)
-    else:
-        inicio = hoje.replace(day=1)
-
-    if fim_str:
-        try:
-            fim = datetime.strptime(
-                fim_str,
-                "%Y-%m-%d"
-            ).date()
-        except ValueError:
-            fim = hoje
-    else:
-        fim = hoje
-
-    # =========================================
-    # RECEITAS DE INSCRIÇÕES
-    # =========================================
-
-    pagamentos = Pagamento.objects.filter(
-        status=Pagamento.PAGO,
-        pago_em__date__gte=inicio,
-        pago_em__date__lte=fim,
+    total_canceladas = (
+        Inscricao.objects
+        .filter(
+            status=Inscricao.CANCELADO
+        )
+        .count()
     )
-
-    receitas_inscricoes = (
-        pagamentos.aggregate(
-            total=Sum("valor")
-        )["total"]
-        or 0
-    )
-
-    # =========================================
-    # RECEITAS EXTRAS
-    # =========================================
-
-    receitas_extras = ContaReceber.objects.filter(
-        status=ContaReceber.RECEBIDO,
-        recebido_em__gte=inicio,
-        recebido_em__lte=fim,
-    )
-
-    total_receitas_extras = (
-        receitas_extras.aggregate(
-            total=Sum("valor")
-        )["total"]
-        or 0
-    )
-
-    # =========================================
-    # TOTAL DE RECEITAS
-    # =========================================
-
-    total_receitas = (
-        receitas_inscricoes
-        + total_receitas_extras
-    )
-
-    # =========================================
-    # DESPESAS
-    # =========================================
-
-    despesas = ContaPagar.objects.filter(
-        status=ContaPagar.PAGO,
-        pago_em__gte=inicio,
-        pago_em__lte=fim,
-    )
-
-    total_despesas = (
-        despesas.aggregate(
-            total=Sum("valor")
-        )["total"]
-        or 0
-    )
-
-    # =========================================
-    # RESULTADO
-    # =========================================
-
-    resultado = (
-        total_receitas
-        - total_despesas
-    )
-
-    # =========================================
-    # LANÇAMENTOS
-    # =========================================
-
-    lista_receitas = []
-
-    for pagamento in pagamentos.select_related(
-    "inscricao"
-):
-        lista_receitas.append({
-        "data": (
-            pagamento.pago_em.date()
-            if pagamento.pago_em
-            else None
-        ),
-        "descricao": (
-            f"Inscrição "
-            f"{pagamento.inscricao.numero}"
-        ),
-        "categoria": "Inscrição",
-        "valor": pagamento.valor,
-        "tipo": "RECEITA",
-    })
-
-    for receita in receitas_extras:
-        lista_receitas.append({
-            "data": receita.recebido_em,
-            "descricao": receita.descricao,
-            "categoria": receita.categoria,
-            "valor": receita.valor,
-            "tipo": "RECEITA",
-        })
-
-    lista_despesas = []
-
-    for despesa in despesas.select_related(
-        "fornecedor"
-    ):
-        lista_despesas.append({
-            "data": despesa.pago_em,
-            "descricao": despesa.descricao,
-            "categoria": despesa.categoria,
-            "valor": despesa.valor,
-            "tipo": "DESPESA",
-            "fornecedor": despesa.fornecedor.nome,
-        })
-
-    lista = (
-        lista_receitas
-        + lista_despesas
-    )
-
-    lista.sort(
-        key=lambda item: item["data"] or inicio,
-        reverse=True,
-    )
-
-    return render(
-        request,
-        "inscricoes/extrato.html",
-        {
-            "inicio": inicio,
-            "fim": fim,
-            "receitas_inscricoes":
-                receitas_inscricoes,
-            "total_receitas_extras":
-                total_receitas_extras,
-            "total_receitas":
-                total_receitas,
-            "total_despesas":
-                total_despesas,
-            "resultado":
-                resultado,
-            "lancamentos":
-                lista,
-        },
-    )    
 
     # =====================================================
     # PAGAMENTOS DAS INSCRIÇÕES
     # =====================================================
 
-    pagamentos_pagos = Pagamento.objects.filter(
-        status=Pagamento.PAGO
+    pagamentos_pagos = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PAGO
+        )
     )
 
-    pagamentos_pendentes = Pagamento.objects.filter(
-        status=Pagamento.PENDENTE
+    pagamentos_pendentes = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PENDENTE
+        )
     )
 
     total_pagas = pagamentos_pagos.count()
-
     total_pendentes = pagamentos_pendentes.count()
 
     recebido_pagamentos = (
-        pagamentos_pagos.aggregate(
+        pagamentos_pagos
+        .aggregate(
             total=Sum("valor")
         )["total"]
         or 0
     )
 
     a_receber_pagamentos = (
-        pagamentos_pendentes.aggregate(
+        pagamentos_pendentes
+        .aggregate(
             total=Sum("valor")
         )["total"]
         or 0
     )
 
     # =====================================================
-    # OUTRAS RECEITAS
+    # CONTAS A RECEBER / RECEITAS EXTRAS
     # =====================================================
 
-    receitas_recebidas = ContaReceber.objects.filter(
-        status=ContaReceber.RECEBIDO
+    receitas_recebidas = (
+        ContaReceber.objects
+        .filter(
+            status=ContaReceber.RECEBIDO
+        )
     )
 
-    receitas_pendentes = ContaReceber.objects.filter(
-        status=ContaReceber.PENDENTE
+    receitas_pendentes = (
+        ContaReceber.objects
+        .filter(
+            status=ContaReceber.PENDENTE
+        )
     )
 
-    receitas_vencidas = ContaReceber.objects.filter(
-        status=ContaReceber.PENDENTE,
-        vencimento__lt=hoje
+    receitas_vencidas = (
+        ContaReceber.objects
+        .filter(
+            status=ContaReceber.PENDENTE,
+            vencimento__lt=hoje,
+        )
     )
 
-    total_receitas_extras_recebidas = (
-        receitas_recebidas.aggregate(
+    recebido_extras = (
+        receitas_recebidas
+        .aggregate(
             total=Sum("valor")
         )["total"]
         or 0
     )
 
-    total_receitas_extras_pendentes = (
-        receitas_pendentes.aggregate(
+    a_receber_extras = (
+        receitas_pendentes
+        .aggregate(
             total=Sum("valor")
         )["total"]
         or 0
     )
 
-    total_receitas_extras_vencidas = (
-        receitas_vencidas.aggregate(
+    receitas_extras_vencidas = (
+        receitas_vencidas
+        .aggregate(
             total=Sum("valor")
         )["total"]
         or 0
@@ -379,12 +267,12 @@ def extrato_financeiro(request):
 
     recebido = (
         recebido_pagamentos
-        + total_receitas_extras_recebidas
+        + recebido_extras
     )
 
     a_receber = (
         a_receber_pagamentos
-        + total_receitas_extras_pendentes
+        + a_receber_extras
     )
 
     receita_prevista = (
@@ -396,35 +284,47 @@ def extrato_financeiro(request):
     # CONTAS A PAGAR
     # =====================================================
 
-    despesas_pagas = ContaPagar.objects.filter(
-        status=ContaPagar.PAGO
+    despesas_pagas = (
+        ContaPagar.objects
+        .filter(
+            status=ContaPagar.PAGO
+        )
     )
 
-    despesas_pendentes = ContaPagar.objects.filter(
-        status=ContaPagar.PENDENTE
+    despesas_pendentes = (
+        ContaPagar.objects
+        .filter(
+            status=ContaPagar.PENDENTE
+        )
     )
 
-    despesas_vencidas = ContaPagar.objects.filter(
-        status=ContaPagar.PENDENTE,
-        vencimento__lt=hoje
+    despesas_vencidas = (
+        ContaPagar.objects
+        .filter(
+            status=ContaPagar.PENDENTE,
+            vencimento__lt=hoje,
+        )
     )
 
     contas_pagas = (
-        despesas_pagas.aggregate(
+        despesas_pagas
+        .aggregate(
             total=Sum("valor")
         )["total"]
         or 0
     )
 
     contas_pendentes = (
-        despesas_pendentes.aggregate(
+        despesas_pendentes
+        .aggregate(
             total=Sum("valor")
         )["total"]
         or 0
     )
 
     contas_vencidas = (
-        despesas_vencidas.aggregate(
+        despesas_vencidas
+        .aggregate(
             total=Sum("valor")
         )["total"]
         or 0
@@ -436,7 +336,7 @@ def extrato_financeiro(request):
     )
 
     # =====================================================
-    # RESULTADO
+    # RESULTADO FINANCEIRO
     # =====================================================
 
     saldo_atual = (
@@ -457,7 +357,7 @@ def extrato_financeiro(request):
 
     vagas_restantes = max(
         vagas_totais - total_inscricoes,
-        0
+        0,
     )
 
     ocupacao = (
@@ -497,7 +397,7 @@ def extrato_financeiro(request):
     idade_60_mais = 0
     total_militares = 0
 
-    for atleta in inscritos:
+    for atleta in inscritos.iterator():
 
         idade = atleta.idade_no_evento
 
@@ -506,19 +406,13 @@ def extrato_financeiro(request):
 
         if idade < 17:
             menor_17 += 1
-
         elif idade <= 59:
             idade_17_59 += 1
-
         else:
             idade_60_mais += 1
 
         if atleta.militar:
             total_militares += 1
-
-    # =====================================================
-    # PERCENTUAL DE PAGAMENTOS
-    # =====================================================
 
     percentual_pagamentos = (
         total_pagas
@@ -529,7 +423,7 @@ def extrato_financeiro(request):
     )
 
     # =====================================================
-    # ÚLTIMAS CONTAS
+    # ÚLTIMOS LANÇAMENTOS
     # =====================================================
 
     ultimas_contas_pagar = (
@@ -548,84 +442,35 @@ def extrato_financeiro(request):
     # =====================================================
 
     contexto = {
-
-        "total_inscricoes":
-            total_inscricoes,
-
-        "total_pagas":
-            total_pagas,
-
-        "total_pendentes":
-            total_pendentes,
-
-        "vagas_totais":
-            vagas_totais,
-
-        "vagas_restantes":
-            vagas_restantes,
-
-        "ocupacao":
-            round(ocupacao, 1),
-
-        "recebido":
-            recebido,
-
-        "a_receber":
-            a_receber,
-
-        "receita_prevista":
-            receita_prevista,
-
-        "contas_pagas":
-            contas_pagas,
-
-        "contas_pendentes":
-            contas_pendentes,
-
-        "contas_vencidas":
-            contas_vencidas,
-
-        "total_despesas":
-            total_despesas,
-
-        "saldo_atual":
-            saldo_atual,
-
-        "resultado_previsto":
-            resultado_previsto,
-
-        "receitas_extras_vencidas":
-            total_receitas_extras_vencidas,
-
-        "mini_sprint":
-            mini_sprint,
-
-        "sprint":
-            sprint,
-
-        "menor_17":
-            menor_17,
-
-        "idade_17_59":
-            idade_17_59,
-
-        "idade_60_mais":
-            idade_60_mais,
-
-        "total_militares":
-            total_militares,
-
-        "percentual_pagamentos":
-            round(
-                percentual_pagamentos,
-                1
-            ),
-
-        "ultimas_contas_pagar":
-            ultimas_contas_pagar,
-
-        "ultimas_contas_receber":
-            ultimas_contas_receber,
+        "total_inscricoes": total_inscricoes,
+        "total_canceladas": total_canceladas,
+        "total_pagas": total_pagas,
+        "total_pendentes": total_pendentes,
+        "recebido": recebido,
+        "a_receber": a_receber,
+        "receita_prevista": receita_prevista,
+        "receitas_extras_vencidas": receitas_extras_vencidas,
+        "contas_pagas": contas_pagas,
+        "contas_pendentes": contas_pendentes,
+        "contas_vencidas": contas_vencidas,
+        "total_despesas": total_despesas,
+        "saldo_atual": saldo_atual,
+        "resultado_previsto": resultado_previsto,
+        "vagas_totais": vagas_totais,
+        "vagas_restantes": vagas_restantes,
+        "ocupacao": round(ocupacao, 1),
+        "mini_sprint": mini_sprint,
+        "sprint": sprint,
+        "menor_17": menor_17,
+        "idade_17_59": idade_17_59,
+        "idade_60_mais": idade_60_mais,
+        "total_militares": total_militares,
+        "percentual_pagamentos": round(
+            percentual_pagamentos,
+            1,
+        ),
+        "ultimas_contas_pagar": ultimas_contas_pagar,
+        "ultimas_contas_receber": ultimas_contas_receber,
     }
 
     return render(
@@ -634,46 +479,257 @@ def extrato_financeiro(request):
         contexto,
     )
 
+
+@staff_member_required
+def extrato_financeiro(request):
+    """
+    Extrato financeiro por período.
+    Mostra apenas valores efetivamente recebidos/pagos.
+    """
+
+    hoje = timezone.localdate()
+
+    inicio_str = request.GET.get("inicio")
+    fim_str = request.GET.get("fim")
+
+    if inicio_str:
+        try:
+            inicio = datetime.strptime(
+                inicio_str,
+                "%Y-%m-%d",
+            ).date()
+        except ValueError:
+            inicio = hoje.replace(day=1)
+    else:
+        inicio = hoje.replace(day=1)
+
+    if fim_str:
+        try:
+            fim = datetime.strptime(
+                fim_str,
+                "%Y-%m-%d",
+            ).date()
+        except ValueError:
+            fim = hoje
+    else:
+        fim = hoje
+
+    # Evita período invertido.
+    if inicio > fim:
+        inicio, fim = fim, inicio
+
+    # =====================================================
+    # RECEITAS DE INSCRIÇÕES
+    # =====================================================
+
+    pagamentos = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PAGO,
+            pago_em__date__gte=inicio,
+            pago_em__date__lte=fim,
+        )
+        .select_related("inscricao")
+    )
+
+    receitas_inscricoes = (
+        pagamentos
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    # =====================================================
+    # RECEITAS EXTRAS
+    # =====================================================
+
+    receitas_extras = (
+        ContaReceber.objects
+        .filter(
+            status=ContaReceber.RECEBIDO,
+            recebido_em__gte=inicio,
+            recebido_em__lte=fim,
+        )
+    )
+
+    total_receitas_extras = (
+        receitas_extras
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    total_receitas = (
+        receitas_inscricoes
+        + total_receitas_extras
+    )
+
+    # =====================================================
+    # DESPESAS
+    # =====================================================
+
+    despesas = (
+        ContaPagar.objects
+        .filter(
+            status=ContaPagar.PAGO,
+            pago_em__gte=inicio,
+            pago_em__lte=fim,
+        )
+        .select_related("fornecedor")
+    )
+
+    total_despesas = (
+        despesas
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    # =====================================================
+    # RESULTADO
+    # =====================================================
+
+    resultado = (
+        total_receitas
+        - total_despesas
+    )
+
+    # =====================================================
+    # LANÇAMENTOS
+    # =====================================================
+
+    lancamentos = []
+
+    for pagamento in pagamentos:
+        data = (
+            pagamento.pago_em.date()
+            if pagamento.pago_em
+            else None
+        )
+
+        lancamentos.append(
+            {
+                "data": data,
+                "descricao": (
+                    f"Inscrição "
+                    f"{pagamento.inscricao.numero} - "
+                    f"{pagamento.inscricao.nome}"
+                ),
+                "categoria": "Inscrição",
+                "valor": pagamento.valor,
+                "tipo": "RECEITA",
+            }
+        )
+
+    for receita in receitas_extras:
+
+        lancamentos.append(
+            {
+                "data": receita.recebido_em,
+                "descricao": receita.descricao,
+                "categoria": receita.categoria,
+                "valor": receita.valor,
+                "tipo": "RECEITA",
+            }
+        )
+
+    for despesa in despesas:
+
+        lancamentos.append(
+            {
+                "data": despesa.pago_em,
+                "descricao": despesa.descricao,
+                "categoria": despesa.categoria,
+                "valor": despesa.valor,
+                "tipo": "DESPESA",
+                "fornecedor": despesa.fornecedor.nome,
+            }
+        )
+
+    lancamentos.sort(
+        key=lambda item: item["data"] or inicio,
+        reverse=True,
+    )
+
+    return render(
+        request,
+        "inscricoes/extrato.html",
+        {
+            "inicio": inicio,
+            "fim": fim,
+            "receitas_inscricoes": receitas_inscricoes,
+            "total_receitas_extras": total_receitas_extras,
+            "total_receitas": total_receitas,
+            "total_despesas": total_despesas,
+            "resultado": resultado,
+            "lancamentos": lancamentos,
+        },
+    )
+
+
 @csrf_exempt
 def webhook_mercadopago(request):
+    """
+    Recebe notificações do Mercado Pago.
+
+    IMPORTANTE:
+    Com os links de pagamento estáticos usados atualmente,
+    o webhook só consegue atualizar automaticamente uma inscrição
+    quando o ID da transação já estiver associado ao pagamento.
+
+    Para confirmação automática por atleta, o ideal é migrar para
+    preferências únicas por inscrição ou outra estratégia que gere
+    uma identificação individual.
+    """
 
     if request.method != "POST":
         return JsonResponse(
             {
-                "detail": "Método não permitido"
+                "detail": "Método não permitido",
             },
             status=405,
         )
 
-    tipo = request.GET.get("type")
-    payment_id = request.GET.get("data.id")
+    try:
+        body = json.loads(
+            request.body.decode("utf-8")
+            or "{}"
+        )
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        body = {}
 
-    if not payment_id:
-        try:
+    tipo = (
+        request.GET.get("type")
+        or body.get("type")
+    )
 
-            body = request.json()
+    payment_id = (
+        request.GET.get("data.id")
+        or body.get("data", {}).get("id")
+    )
 
-            payment_id = (
-                body
-                .get("data", {})
-                .get("id")
-            )
-
-            tipo = (
-                tipo
-                or body.get("type")
-            )
-
-        except Exception:
-            body = {}
-
+    # Ignora eventos que não sejam de pagamento.
     if tipo and tipo != "payment":
-
         return JsonResponse(
             {
-                "received": True
+                "received": True,
             }
         )
+
+    if not payment_id:
+        return JsonResponse(
+            {
+                "received": True,
+                "detail": "Notificação sem payment_id.",
+            }
+        )
+
+    # =====================================================
+    # VALIDAÇÃO DA ASSINATURA
+    # =====================================================
 
     secret = os.getenv(
         "MERCADOPAGO_WEBHOOK_SECRET"
@@ -683,12 +739,12 @@ def webhook_mercadopago(request):
 
         x_signature = request.headers.get(
             "x-signature",
-            ""
+            "",
         )
 
         x_request_id = request.headers.get(
             "x-request-id",
-            ""
+            "",
         )
 
         ts = None
@@ -705,10 +761,9 @@ def webhook_mercadopago(request):
                 v1 = value
 
         if not ts or not v1:
-
             return JsonResponse(
                 {
-                    "detail": "Assinatura inválida"
+                    "detail": "Assinatura inválida.",
                 },
                 status=401,
             )
@@ -720,8 +775,8 @@ def webhook_mercadopago(request):
         )
 
         generated = hmac.new(
-            secret.encode(),
-            manifest.encode(),
+            secret.encode("utf-8"),
+            manifest.encode("utf-8"),
             hashlib.sha256,
         ).hexdigest()
 
@@ -729,41 +784,46 @@ def webhook_mercadopago(request):
             generated,
             v1,
         ):
-
             return JsonResponse(
                 {
-                    "detail":
-                        "Assinatura inválida"
+                    "detail": "Assinatura inválida.",
                 },
                 status=401,
             )
+
+    # =====================================================
+    # ACCESS TOKEN
+    # =====================================================
 
     access_token = os.getenv(
         "MERCADOPAGO_ACCESS_TOKEN"
     )
 
     if not access_token:
-
         return JsonResponse(
             {
                 "received": True,
                 "payment_id": payment_id,
                 "detail":
-                    "Webhook recebido, mas Access Token ainda não configurado.",
+                    "Access Token não configurado.",
             }
         )
+
+    # =====================================================
+    # CONSULTA AO MERCADO PAGO
+    # =====================================================
 
     try:
 
         response = requests.get(
-            "https://api.mercadopago.com/v1/payments/"
-            f"{payment_id}",
-
+            (
+                "https://api.mercadopago.com/"
+                f"v1/payments/{payment_id}"
+            ),
             headers={
                 "Authorization":
-                    f"Bearer {access_token}"
+                    f"Bearer {access_token}",
             },
-
             timeout=15,
         )
 
@@ -776,15 +836,23 @@ def webhook_mercadopago(request):
         return JsonResponse(
             {
                 "detail":
-                    "Não foi possível consultar o Mercado Pago."
+                    "Não foi possível consultar o Mercado Pago.",
             },
             status=502,
         )
 
+    status_mp = data.get("status")
+
+    # =====================================================
+    # LOCALIZA PAGAMENTO
+    # =====================================================
+
     try:
 
         pagamento = (
-            Pagamento.objects.get(
+            Pagamento.objects
+            .select_related("inscricao")
+            .get(
                 identificador_transacao=
                     str(payment_id)
             )
@@ -795,16 +863,16 @@ def webhook_mercadopago(request):
         return JsonResponse(
             {
                 "received": True,
-                "payment_id":
-                    payment_id,
+                "payment_id": payment_id,
+                "status": status_mp,
                 "detail":
-                    "Pagamento não associado a uma inscrição.",
+                    "Pagamento ainda não associado a uma inscrição.",
             }
         )
 
-    status_mp = data.get(
-        "status"
-    )
+    # =====================================================
+    # ATUALIZA DADOS
+    # =====================================================
 
     pagamento.metodo = (
         data.get("payment_method_id")
@@ -818,13 +886,10 @@ def webhook_mercadopago(request):
 
     if status_mp == "approved":
 
-        pagamento.status = (
-            Pagamento.PAGO
-        )
+        pagamento.status = Pagamento.PAGO
 
-        pagamento.pago_em = (
-            timezone.now()
-        )
+        if not pagamento.pago_em:
+            pagamento.pago_em = timezone.now()
 
         pagamento.inscricao.status = (
             Inscricao.PAGO
@@ -837,10 +902,10 @@ def webhook_mercadopago(request):
             ]
         )
 
-    elif status_mp in [
+    elif status_mp in (
         "cancelled",
         "rejected",
-    ]:
+    ):
 
         pagamento.status = (
             Pagamento.CANCELADO

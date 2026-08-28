@@ -305,8 +305,6 @@ class FornecedorAdmin(admin.ModelAdmin):
 @admin.register(ContaPagar)
 class ContaPagarAdmin(admin.ModelAdmin):
 
-    
-
     list_display = (
         "descricao",
         "fornecedor",
@@ -328,31 +326,34 @@ class ContaPagarAdmin(admin.ModelAdmin):
         "fornecedor__nome",
     )
 
-def save_model(
-    self,
-    request,
-    obj,
-    form,
-    change,
-):
-    hoje = timezone.localdate()
+    date_hierarchy = "vencimento"
 
-    if (
-        obj.status == obj.PENDENTE
-        and obj.vencimento < hoje
-    ):
-        obj.status = obj.VENCIDO
+    actions = [
+        "marcar_como_pagas",
+    ]
 
-    if obj.status == obj.PAGO and not obj.pago_em:
-        obj.pago_em = hoje
+    @admin.action(description="Marcar selecionadas como pagas")
+    def marcar_como_pagas(self, request, queryset):
 
-    super().save_model(
-        request,
-        obj,
-        form,
-        change,
-    )
+        hoje = timezone.localdate()
 
+        atualizadas = 0
+
+        for conta in queryset:
+
+            if conta.status != ContaPagar.PAGO:
+
+                conta.status = ContaPagar.PAGO
+                conta.pago_em = hoje
+
+                conta.save()
+
+                atualizadas += 1
+
+        self.message_user(
+            request,
+            f"{atualizadas} conta(s) marcada(s) como paga(s)."
+        )    
     date_hierarchy = "vencimento"
 
 
@@ -380,32 +381,35 @@ class ContaReceberAdmin(admin.ModelAdmin):
         "inscricao__nome",
     )
 
-def save_model(
-    self,
-    request,
-    obj,
-    form,
-    change,
-):
-    hoje = timezone.localdate()
+    date_hierarchy = "vencimento"
 
-    if (
-        obj.status == obj.PENDENTE
-        and obj.vencimento < hoje
-    ):
-        obj.status = obj.VENCIDO
+    actions = [
+        "marcar_como_recebidas",
+    ]
 
-    if (
-        obj.status == obj.RECEBIDO
-        and not obj.recebido_em
-    ):
-        obj.recebido_em = hoje
+    @admin.action(description="Marcar selecionadas como recebidas")
+    def marcar_como_recebidas(self, request, queryset):
 
-    super().save_model(
-        request,
-        obj,
-        form,
-        change,
-    )
+        hoje = timezone.localdate()
+
+        atualizadas = 0
+
+        for conta in queryset:
+
+            if conta.status != ContaReceber.RECEBIDO:
+
+                conta.status = ContaReceber.RECEBIDO
+                conta.recebido_em = hoje
+
+                conta.save()
+
+                atualizadas += 1
+
+        self.message_user(
+            request,
+            f"{atualizadas} conta(s) marcada(s) como recebida(s)."
+        )
 
     date_hierarchy = "vencimento"
+
+    
