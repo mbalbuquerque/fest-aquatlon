@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>
+        Extrato Financeiro | Fest Aquathlon
+    </title>
+
+    <style>
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #17202a;
+        }
+
+        .container {
+            width: min(
+                1200px,
+                calc(100% - 30px)
+            );
+
+            margin: 30px auto;
+        }
+
+        .header {
+            background: #061a2a;
+            color: white;
+            padding: 25px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 18px;
+
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 16px;
+
+            box-shadow:
+                0 8px 25px
+                rgba(0,0,0,.06);
+        }
+
+        .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #73818b;
+            font-weight: bold;
+        }
+
+        .value {
+            margin-top: 10px;
+            font-size: 28px;
+            font-weight: 900;
+        }
+
+        .positive {
+            color: #087443;
+        }
+
+        .negative {
+            color: #a32d2d;
+        }
+
+        .filter {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+        }
+
+        .filter form {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field label {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #ccd5db;
+            border-radius: 8px;
+        }
+
+        button,
+        .button {
+            padding: 11px 16px;
+            border: none;
+            border-radius: 8px;
+            background: #ffd21a;
+            color: #061a2a;
+            font-weight: 900;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #e5e8ea;
+            text-align: left;
+        }
+
+        th {
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .receita {
+            color: #087443;
+            font-weight: bold;
+        }
+
+        .despesa {
+            color: #a32d2d;
+            font-weight: bold;
+        }
+
+        @media(max-width: 800px) {
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="container">
+
+        <h1>
+            FEST AQUATHLON 2026
+        </h1>
+
+        <p>
+            Extrato financeiro
+        </p>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+
+    <section class="filter">
+
+        <form method="get">
+
+            <div class="field">
+
+                <label>
+                    Data inicial
+                </label>
+
+                <input
+                    type="date"
+                    name="inicio"
+                    value="{{ inicio|date:'Y-m-d' }}"
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Data final
+                </label>
+
+                <input
+                    type="date"
+                    name="fim"
+                    value="{{ fim|date:'Y-m-d' }}"
+                >
+
+            </div>
+
+
+            <button type="submit">
+                FILTRAR
+            </button>
+
+        </form>
+
+    </section>
+
+
+    <section class="cards">
+
+
+        <div class="card">
+
+            <div class="label">
+                Receitas
+            </div>
+
+            <div class="value positive">
+                R$ {{ total_receitas }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="label">
+                Despesas
+            </div>
+
+            <div class="value negative">
+                R$ {{ total_despesas }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="label">
+                Resultado
+            </div>
+
+            <div
+                class="value
+                {% if resultado >= 0 %}
+                    positive
+                {% else %}
+                    negative
+                {% endif %}"
+            >
+                R$ {{ resultado }}
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>
+            Lançamentos
+        </h2>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Data
+                    </th>
+
+                    <th>
+                        Descrição
+                    </th>
+
+                    <th>
+                        Categoria
+                    </th>
+
+                    <th>
+                        Tipo
+                    </th>
+
+                    <th>
+                        Valor
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for item in lancamentos %}
+
+                    <tr>
+
+                        <td>
+                            {{ item.data|date:"d/m/Y" }}
+                        </td>
+
+                        <td>
+                            {{ item.descricao }}
+                        </td>
+
+                        <td>
+                            {{ item.categoria }}
+                        </td>
+
+                        <td>
+
+                            {% if item.tipo == "RECEITA" %}
+
+                                <span class="receita">
+                                    RECEITA
+                                </span>
+
+                            {% else %}
+
+                                <span class="despesa">
+                                    DESPESA
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if item.tipo == "RECEITA" %}
+                                <span class="receita">
+                                    + R$ {{ item.valor }}
+                                </span>
+                            {% else %}
+                                <span class="despesa">
+                                    - R$ {{ item.valor }}
+                                </span>
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+
+                        <td colspan="5">
+
+                            Nenhum lançamento encontrado
+                            no período.
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+
+    <p style="margin-top:20px;">
+
+        <a
+            href="/dashboard/"
+            class="button"
+        >
+            ← Voltar ao Dashboard
+        </a>
+
+    </p>
+
+
+</main>
+
+</body>
+
+</html>

@@ -270,7 +270,134 @@
     </div>
 
 </header>
+<!-- ==============================
+     ÚLTIMOS LANÇAMENTOS
+=============================== -->
 
+<section class="section">
+
+    <h2 class="section-title">
+        Últimos lançamentos
+    </h2>
+
+    <div class="two">
+
+        <!-- CONTAS A RECEBER -->
+
+        <div class="card">
+
+            <h3>
+                📥 Últimas receitas
+            </h3>
+
+            {% if ultimas_contas_receber %}
+
+                {% for conta in ultimas_contas_receber %}
+
+                    <div
+                        style="
+                            padding:12px 0;
+                            border-bottom:1px solid #e5e8ea;
+                        "
+                    >
+
+                        <strong>
+                            {{ conta.descricao }}
+                        </strong>
+
+                        <div
+                            style="
+                                display:flex;
+                                justify-content:space-between;
+                                gap:10px;
+                                margin-top:5px;
+                            "
+                        >
+
+                            <small>
+                                {{ conta.status }}
+                            </small>
+
+                            <strong>
+                                + R$ {{ conta.valor }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <p>
+                    Nenhuma receita cadastrada.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+        <!-- CONTAS A PAGAR -->
+
+        <div class="card">
+
+            <h3>
+                📤 Últimas despesas
+            </h3>
+
+            {% if ultimas_contas_pagar %}
+
+                {% for conta in ultimas_contas_pagar %}
+
+                    <div
+                        style="
+                            padding:12px 0;
+                            border-bottom:1px solid #e5e8ea;
+                        "
+                    >
+
+                        <strong>
+                            {{ conta.descricao }}
+                        </strong>
+
+                        <div
+                            style="
+                                display:flex;
+                                justify-content:space-between;
+                                gap:10px;
+                                margin-top:5px;
+                            "
+                        >
+
+                            <small>
+                                {{ conta.status }}
+                            </small>
+
+                            <strong>
+                                - R$ {{ conta.valor }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <p>
+                    Nenhuma despesa cadastrada.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</section>
 
 <!-- ==============================
          ACESSOS
@@ -331,6 +458,13 @@
             >
                 ADMINISTRATIVO
             </a>
+
+            <a
+    href="/extrato-financeiro/"
+    class="button"
+>
+    📊 EXTRATO FINANCEIRO
+</a>
 
 
         </div>

@@ -39,4 +39,10 @@ urlpatterns = [
         views.dashboard,
         name="dashboard",
     ),
+
+    path(
+    "extrato-financeiro/",
+    views.extrato_financeiro,
+    name="extrato_financeiro",
+),
 ]

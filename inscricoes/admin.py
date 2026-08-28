@@ -305,6 +305,8 @@ class FornecedorAdmin(admin.ModelAdmin):
 @admin.register(ContaPagar)
 class ContaPagarAdmin(admin.ModelAdmin):
 
+    
+
     list_display = (
         "descricao",
         "fornecedor",
@@ -324,6 +326,31 @@ class ContaPagarAdmin(admin.ModelAdmin):
     search_fields = (
         "descricao",
         "fornecedor__nome",
+    )
+
+def save_model(
+    self,
+    request,
+    obj,
+    form,
+    change,
+):
+    hoje = timezone.localdate()
+
+    if (
+        obj.status == obj.PENDENTE
+        and obj.vencimento < hoje
+    ):
+        obj.status = obj.VENCIDO
+
+    if obj.status == obj.PAGO and not obj.pago_em:
+        obj.pago_em = hoje
+
+    super().save_model(
+        request,
+        obj,
+        form,
+        change,
     )
 
     date_hierarchy = "vencimento"
@@ -351,6 +378,34 @@ class ContaReceberAdmin(admin.ModelAdmin):
         "descricao",
         "inscricao__numero",
         "inscricao__nome",
+    )
+
+def save_model(
+    self,
+    request,
+    obj,
+    form,
+    change,
+):
+    hoje = timezone.localdate()
+
+    if (
+        obj.status == obj.PENDENTE
+        and obj.vencimento < hoje
+    ):
+        obj.status = obj.VENCIDO
+
+    if (
+        obj.status == obj.RECEBIDO
+        and not obj.recebido_em
+    ):
+        obj.recebido_em = hoje
+
+    super().save_model(
+        request,
+        obj,
+        form,
+        change,
     )
 
     date_hierarchy = "vencimento"
