@@ -56,5 +56,5 @@ path(
     "exportar-excel/",
     views.exportar_excel,
     name="exportar_excel",
-),    
+), 
 ]
