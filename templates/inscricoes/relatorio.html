@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>
+        Relatórios | Fest Aquathlon 2026
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #17202a;
+        }
+
+        .header {
+            background: #061a2a;
+            color: white;
+            padding: 25px;
+        }
+
+        .container {
+            width: min(
+                1200px,
+                calc(100% - 30px)
+            );
+
+            margin: 30px auto;
+        }
+
+        .header .container {
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:
+                repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        .three {
+            display: grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .two {
+            display: grid;
+            grid-template-columns:
+                repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow:
+                0 8px 25px
+                rgba(0,0,0,.06);
+        }
+
+        .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: #72818b;
+        }
+
+        .number {
+            margin-top: 10px;
+            font-size: 30px;
+            font-weight: 900;
+        }
+
+        .money {
+            margin-top: 10px;
+            font-size: 27px;
+            font-weight: 900;
+            color: #087443;
+        }
+
+        .negative {
+            color: #a32d2d;
+        }
+
+        .section {
+            margin-top: 30px;
+        }
+
+        .section h2 {
+            margin-bottom: 15px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 13px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            background: #ffd21a;
+            color: #061a2a;
+            font-weight: 900;
+        }
+
+        .button.dark {
+            background: #061a2a;
+            color: white;
+        }
+
+        @media(max-width:900px) {
+
+            .grid,
+            .three,
+            .two {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+        }
+
+        @media(max-width:600px) {
+
+            .grid,
+            .three,
+            .two {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header class="header">
+
+    <div class="container">
+
+        <h1>
+            FEST AQUATHLON 2026
+        </h1>
+
+        <p>
+            Relatórios gerenciais
+        </p>
+
+    </div>
+
+</header>
+
+<main class="container">
+
+    <section>
+
+        <div class="grid">
+
+            <div class="card">
+
+                <div class="label">
+                    Inscrições
+                </div>
+
+                <div class="number">
+                    {{ total_inscricoes }}
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="label">
+                    Pagamentos pagos
+                </div>
+
+                <div class="number">
+                    {{ total_pagas }}
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="label">
+                    Pagamentos pendentes
+                </div>
+
+                <div class="number">
+                    {{ total_pendentes }}
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="label">
+                    Data do relatório
+                </div>
+
+                <div class="number">
+                    {{ hoje|date:"d/m/Y" }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <h2>
+            Receitas
+        </h2>
+
+        <div class="three">
+
+            <div class="card">
+
+                <div class="label">
+                    Recebido
+                </div>
+
+                <div class="money">
+                    R$ {{ total_recebido }}
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="label">
+                    A receber
+                </div>
+
+                <div class="money">
+                    R$ {{ total_a_receber }}
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="label">
+                    Receita prevista
+                </div>
+
+                <div class="money">
+                    R$ {{ receita_prevista }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <h2>
+            Despesas
+        </h2>
+
+        <div class="three">
+
+            <div class="card">
+
+                <div class="label">
+                    Contas pagas
+                </div>
+
+                <div class="money negative">
+                    R$ {{ total_contas_pagas }}
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="label">
+                    Contas pendentes
+                </div>
+
+                <div class="money negative">
+                    R$ {{ total_contas_pendentes }}
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="label">
+                    Contas vencidas
+                </div>
+
+                <div class="money negative">
+                    R$ {{ total_contas_vencidas }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <h2>
+            Resultado
+        </h2>
+
+        <div class="two">
+
+            <div class="card">
+
+                <div class="label">
+                    Saldo atual
+                </div>
+
+                <div class="money">
+                    R$ {{ saldo_atual }}
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="label">
+                    Resultado previsto
+                </div>
+
+                <div class="money">
+                    R$ {{ resultado_previsto }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <h2>
+            Participantes
+        </h2>
+
+        <div class="two">
+
+            <div class="card">
+
+                <div class="label">
+                    Mini Sprint
+                </div>
+
+                <div class="number">
+                    {{ mini_sprint }}
+                </div>
+
+            </div>
+
+            <div class="card">
+
+                <div class="label">
+                    Sprint
+                </div>
+
+                <div class="number">
+                    {{ sprint }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <a
+            href="/extrato-financeiro/"
+            class="button"
+        >
+            EXTRATO FINANCEIRO
+        </a>
+
+        <a
+            href="/dashboard/"
+            class="button dark"
+        >
+            DASHBOARD
+        </a>
+
+        <a
+            href="/admin/"
+            class="button"
+        >
+            ADMINISTRATIVO
+        </a>
+
+    </section>
+
+    <section class="section">
+
+    <h2>
+        Indicadores financeiros
+    </h2>
+
+    <div class="three">
+
+        <div class="card">
+
+            <div class="label">
+                Receita recebida
+            </div>
+
+            <div class="money">
+                R$ {{ total_recebido }}
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <div class="label">
+                A receber
+            </div>
+
+            <div class="money">
+                R$ {{ total_a_receber }}
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <div class="label">
+                Despesas previstas
+            </div>
+
+            <div class="money negative">
+                R$ {{ despesas_previstas }}
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+<section class="section">
+
+    <h2>
+        Relatórios
+    </h2>
+
+    <div class="actions">
+
+        <a
+            href="/admin/inscricoes/inscricao/"
+            class="button"
+        >
+            INSCRIÇÕES
+        </a>
+
+        <a
+            href="/admin/inscricoes/pagamento/"
+            class="button dark"
+        >
+            PAGAMENTOS
+        </a>
+
+        <a
+            href="/admin/inscricoes/contareceber/"
+            class="button"
+        >
+            CONTAS A RECEBER
+        </a>
+
+        <a
+            href="/admin/inscricoes/contapagar/"
+            class="button dark"
+        >
+            CONTAS A PAGAR
+        </a>
+
+        <a
+            href="/extrato-financeiro/"
+            class="button"
+        >
+            EXTRATO FINANCEIRO
+        </a>
+
+    </div>
+
+</section>
+
+</main>
+
+</body>
+
+</html>

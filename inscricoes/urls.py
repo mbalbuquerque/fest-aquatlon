@@ -45,4 +45,10 @@ urlpatterns = [
     views.extrato_financeiro,
     name="extrato_financeiro",
 ),
+    
+path(
+    "relatorios/",
+    views.relatorios,
+    name="relatorios",
+),    
 ]
