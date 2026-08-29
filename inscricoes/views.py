@@ -4,6 +4,7 @@ import hmac
 import json
 import os
 
+
 import requests
 
 from django.contrib.admin.views.decorators import staff_member_required
@@ -12,6 +13,10 @@ from django.http import JsonResponse, request
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment
+from django.http import HttpResponse
 
 from .forms import InscricaoForm
 from .models import (
@@ -1090,3 +1095,415 @@ def webhook_mercadopago(request):
             "status": status_mp,
         }
     )
+    
+@staff_member_required
+def exportar_excel(request):
+
+    hoje = timezone.localdate()
+
+    # -------------------------------------------------
+    # DADOS
+    # -------------------------------------------------
+
+    total_inscricoes = (
+        Inscricao.objects
+        .exclude(
+            status=Inscricao.CANCELADO
+        )
+        .count()
+    )
+
+    total_pagas = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PAGO
+        )
+        .count()
+    )
+
+    total_pendentes = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PENDENTE
+        )
+        .count()
+    )
+
+    recebido_inscricoes = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PAGO
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    a_receber_inscricoes = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PENDENTE
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    recebido_extras = (
+        ContaReceber.objects
+        .filter(
+            status=ContaReceber.RECEBIDO
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    a_receber_extras = (
+        ContaReceber.objects
+        .filter(
+            status=ContaReceber.PENDENTE
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    contas_pagas = (
+        ContaPagar.objects
+        .filter(
+            status=ContaPagar.PAGO
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    contas_pendentes = (
+        ContaPagar.objects
+        .filter(
+            status=ContaPagar.PENDENTE
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    contas_vencidas = (
+        ContaPagar.objects
+        .filter(
+            status=ContaPagar.VENCIDO
+        )
+        .aggregate(
+            total=Sum("valor")
+        )["total"]
+        or 0
+    )
+
+    total_recebido = (
+        recebido_inscricoes
+        + recebido_extras
+    )
+
+    total_a_receber = (
+        a_receber_inscricoes
+        + a_receber_extras
+    )
+
+    receita_prevista = (
+        total_recebido
+        + total_a_receber
+    )
+
+    despesas_previstas = (
+        contas_pagas
+        + contas_pendentes
+        + contas_vencidas
+    )
+
+    saldo_atual = (
+        total_recebido
+        - contas_pagas
+    )
+
+    resultado_previsto = (
+        receita_prevista
+        - despesas_previstas
+    )
+
+    # -------------------------------------------------
+    # CRIA PLANILHA
+    # -------------------------------------------------
+
+    workbook = Workbook()
+
+    resumo = workbook.active
+    resumo.title = "Resumo"
+
+    resumo["A1"] = "FEST AQUATHLON 2026"
+    resumo["A1"].font = Font(
+        bold=True,
+        size=16,
+    )
+
+    resumo["A2"] = "Relatório financeiro"
+    resumo["A2"].font = Font(
+        bold=True,
+    )
+
+    dados = [
+        ("Data do relatório", hoje),
+        ("Total de inscrições", total_inscricoes),
+        ("Pagamentos pagos", total_pagas),
+        ("Pagamentos pendentes", total_pendentes),
+        ("Total recebido", float(total_recebido)),
+        ("Total a receber", float(total_a_receber)),
+        ("Receita prevista", float(receita_prevista)),
+        ("Contas pagas", float(contas_pagas)),
+        ("Contas pendentes", float(contas_pendentes)),
+        ("Contas vencidas", float(contas_vencidas)),
+        ("Despesas previstas", float(despesas_previstas)),
+        ("Saldo atual", float(saldo_atual)),
+        ("Resultado previsto", float(resultado_previsto)),
+    ]
+
+    linha = 4
+
+    for descricao, valor in dados:
+
+        resumo.cell(
+            row=linha,
+            column=1,
+            value=descricao,
+        )
+
+        resumo.cell(
+            row=linha,
+            column=2,
+            value=valor,
+        )
+
+        linha += 1
+
+    resumo.column_dimensions["A"].width = 30
+    resumo.column_dimensions["B"].width = 20
+
+    # -------------------------------------------------
+    # ABA INSCRIÇÕES
+    # -------------------------------------------------
+
+    aba_inscricoes = workbook.create_sheet(
+        "Inscrições"
+    )
+
+    cabecalho = [
+        "Número",
+        "Nome",
+        "Telefone",
+        "E-mail",
+        "Nascimento",
+        "Idade",
+        "Modalidade",
+        "Militar",
+        "Lote",
+        "Valor",
+        "Status",
+    ]
+
+    aba_inscricoes.append(cabecalho)
+
+    for celula in aba_inscricoes[1]:
+        celula.font = Font(bold=True)
+
+    atletas = (
+        Inscricao.objects
+        .all()
+        .order_by("numero")
+    )
+
+    for atleta in atletas:
+
+        aba_inscricoes.append([
+            atleta.numero,
+            atleta.nome,
+            atleta.telefone,
+            atleta.email,
+            atleta.data_nascimento,
+            atleta.idade_no_evento,
+            atleta.get_modalidade_display(),
+            "Sim" if atleta.militar else "Não",
+            atleta.lote,
+            float(atleta.valor_total),
+            atleta.get_status_display(),
+        ])
+
+    # -------------------------------------------------
+    # ABA CONTAS A RECEBER
+    # -------------------------------------------------
+
+    aba_receber = workbook.create_sheet(
+        "Contas a Receber"
+    )
+
+    aba_receber.append([
+        "Descrição",
+        "Categoria",
+        "Valor",
+        "Vencimento",
+        "Status",
+        "Recebido em",
+    ])
+
+    for celula in aba_receber[1]:
+        celula.font = Font(bold=True)
+
+    for conta in ContaReceber.objects.all():
+
+        aba_receber.append([
+            conta.descricao,
+            conta.categoria,
+            float(conta.valor),
+            conta.vencimento,
+            conta.get_status_display(),
+            conta.recebido_em,
+        ])
+
+    # -------------------------------------------------
+    # ABA CONTAS A PAGAR
+    # -------------------------------------------------
+
+    aba_pagar = workbook.create_sheet(
+        "Contas a Pagar"
+    )
+
+    aba_pagar.append([
+        "Fornecedor",
+        "Descrição",
+        "Categoria",
+        "Valor",
+        "Vencimento",
+        "Status",
+        "Pago em",
+    ])
+
+    for celula in aba_pagar[1]:
+        celula.font = Font(bold=True)
+
+    for conta in ContaPagar.objects.select_related(
+        "fornecedor"
+    ).all():
+
+        aba_pagar.append([
+            conta.fornecedor.nome,
+            conta.descricao,
+            conta.categoria,
+            float(conta.valor),
+            conta.vencimento,
+            conta.get_status_display(),
+            conta.pago_em,
+        ])
+
+    # -------------------------------------------------
+    # ABA PAGAMENTOS
+    # -------------------------------------------------
+
+    aba_pagamentos = workbook.create_sheet(
+        "Pagamentos"
+    )
+
+    aba_pagamentos.append([
+        "Inscrição",
+        "Atleta",
+        "Valor",
+        "Status",
+        "Método",
+        "Transação",
+        "Criado em",
+        "Pago em",
+    ])
+
+    for celula in aba_pagamentos[1]:
+        celula.font = Font(bold=True)
+
+    for pagamento in Pagamento.objects.select_related(
+        "inscricao"
+    ).all():
+
+        aba_pagamentos.append([
+            pagamento.inscricao.numero,
+            pagamento.inscricao.nome,
+            float(pagamento.valor),
+            pagamento.get_status_display(),
+            pagamento.metodo,
+            pagamento.identificador_transacao,
+            pagamento.criado_em,
+            pagamento.pago_em,
+        ])
+
+    # -------------------------------------------------
+    # FORMATAÇÃO
+    # -------------------------------------------------
+
+    for sheet in workbook.worksheets:
+
+        for coluna in sheet.columns:
+
+            tamanho = 0
+
+            for celula in coluna:
+
+                valor = (
+                    ""
+                    if celula.value is None
+                    else str(celula.value)
+                )
+
+                tamanho = max(
+                    tamanho,
+                    len(valor),
+                )
+
+            letra = coluna[0].column_letter
+
+            sheet.column_dimensions[
+                letra
+            ].width = min(
+                tamanho + 3,
+                45,
+            )
+
+        for row in sheet.iter_rows():
+
+            for celula in row:
+
+                celula.alignment = Alignment(
+                    vertical="center"
+                )
+
+    # -------------------------------------------------
+    # DOWNLOAD
+    # -------------------------------------------------
+
+    response = HttpResponse(
+        content_type=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        )
+    )
+
+    response[
+        "Content-Disposition"
+    ] = (
+        'attachment; '
+        'filename="fest_aquathlon_relatorio.xlsx"'
+    )
+
+    workbook.save(response)
+
+    return response

@@ -50,5 +50,11 @@ path(
     "relatorios/",
     views.relatorios,
     name="relatorios",
+),
+
+path(
+    "exportar-excel/",
+    views.exportar_excel,
+    name="exportar_excel",
 ),    
 ]
