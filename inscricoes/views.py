@@ -4,19 +4,17 @@ import hmac
 import json
 import os
 
-
 import requests
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Sum
-from django.http import JsonResponse, request
+from django.http import JsonResponse, HttpResponse, request
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment
-from django.http import HttpResponse
 
 from .forms import InscricaoForm
 from .models import (
@@ -477,6 +475,7 @@ def dashboard(request):
         "ultimas_contas_pagar": ultimas_contas_pagar,
         "ultimas_contas_receber": ultimas_contas_receber,
     }
+   
 
     return render(
         request,
@@ -489,10 +488,18 @@ def dashboard(request):
 def extrato_financeiro(request):
     """
     Extrato financeiro por período.
-    Mostra apenas valores efetivamente recebidos/pagos.
+
+    Mostra somente:
+    - pagamentos de inscrições efetivamente pagos;
+    - contas a receber efetivamente recebidas;
+    - contas a pagar efetivamente pagas.
     """
 
     hoje = timezone.localdate()
+
+    # =====================================================
+    # PERÍODO
+    # =====================================================
 
     inicio_str = request.GET.get("inicio")
     fim_str = request.GET.get("fim")
@@ -519,11 +526,159 @@ def extrato_financeiro(request):
     else:
         fim = hoje
 
-    # Evita período invertido.
+    # Evita período invertido
     if inicio > fim:
         inicio, fim = fim, inicio
-        
-        
+
+    # =====================================================
+    # PAGAMENTOS DE INSCRIÇÕES
+    # =====================================================
+
+    pagamentos = (
+        Pagamento.objects
+        .filter(
+            status=Pagamento.PAGO,
+            pago_em__isnull=False,
+            pago_em__gte=inicio,
+            pago_em__lte=fim,
+        )
+        .select_related("inscricao")
+        .order_by("pago_em")
+    )
+
+    # =====================================================
+    # CONTAS A RECEBER
+    # =====================================================
+
+    contas_receber = (
+        ContaReceber.objects
+        .filter(
+            status=ContaReceber.RECEBIDO,
+            recebido_em__isnull=False,
+            recebido_em__gte=inicio,
+            recebido_em__lte=fim,
+        )
+        .order_by("recebido_em")
+    )
+
+    # =====================================================
+    # CONTAS A PAGAR
+    # =====================================================
+
+    contas_pagar = (
+        ContaPagar.objects
+        .filter(
+            status=ContaPagar.PAGO,
+            pago_em__isnull=False,
+            pago_em__gte=inicio,
+            pago_em__lte=fim,
+        )
+        .select_related("fornecedor")
+        .order_by("pago_em")
+    )
+
+    # =====================================================
+    # LANÇAMENTOS
+    # =====================================================
+
+    lancamentos = []
+
+    # -----------------------------------------------------
+    # PAGAMENTOS DAS INSCRIÇÕES
+    # -----------------------------------------------------
+
+    for pagamento in pagamentos:
+
+        lancamentos.append({
+            "data": pagamento.pago_em,
+            "descricao": (
+                f"Inscrição #{pagamento.inscricao.numero} - "
+                f"{pagamento.inscricao.nome}"
+            ),
+            "categoria": "Inscrição",
+            "tipo": "RECEITA",
+            "valor": pagamento.valor,
+        })
+
+    # -----------------------------------------------------
+    # CONTAS A RECEBER
+    # -----------------------------------------------------
+
+    for conta in contas_receber:
+
+        lancamentos.append({
+            "data": conta.recebido_em,
+            "descricao": conta.descricao,
+            "categoria": conta.categoria,
+            "tipo": "RECEITA",
+            "valor": conta.valor,
+        })
+
+    # -----------------------------------------------------
+    # CONTAS A PAGAR
+    # -----------------------------------------------------
+
+    for conta in contas_pagar:
+
+        lancamentos.append({
+            "data": conta.pago_em,
+            "descricao": conta.descricao,
+            "categoria": conta.categoria,
+            "tipo": "DESPESA",
+            "valor": conta.valor,
+        })
+
+    # =====================================================
+    # ORDENAÇÃO
+    # =====================================================
+
+    lancamentos.sort(
+        key=lambda item: item["data"]
+    )
+
+    # =====================================================
+    # TOTAIS
+    # =====================================================
+
+    total_receitas = sum(
+        item["valor"]
+        for item in lancamentos
+        if item["tipo"] == "RECEITA"
+    )
+
+    total_despesas = sum(
+        item["valor"]
+        for item in lancamentos
+        if item["tipo"] == "DESPESA"
+    )
+
+    resultado = (
+        total_receitas
+        - total_despesas
+    )
+
+    # =====================================================
+    # CONTEXTO
+    # =====================================================
+
+    contexto = {
+        "inicio": inicio,
+        "fim": fim,
+
+        "total_receitas": total_receitas,
+        "total_despesas": total_despesas,
+        "resultado": resultado,
+
+        "lancamentos": lancamentos,
+    }
+
+    return render(
+        request,
+        "inscricoes/extrato.html",
+        contexto,
+    )
+
+
 @staff_member_required
 def relatorios(request):
     """

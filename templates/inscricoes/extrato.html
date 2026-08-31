@@ -240,7 +240,7 @@
             </div>
 
             <div class="value positive">
-                R$ {{ total_receitas }}
+                R$ {{ total_receitas|floatformat:2 }}
             </div>
 
         </div>
@@ -253,7 +253,7 @@
             </div>
 
             <div class="value negative">
-                R$ {{ total_despesas }}
+                R$ {{ total_despesas|floatformat:2 }}
             </div>
 
         </div>
@@ -273,7 +273,7 @@
                     negative
                 {% endif %}"
             >
-                R$ {{ resultado }}
+                R$ {{ resultado|floatformat:2 }}
             </div>
 
         </div>
@@ -359,11 +359,11 @@
 
                             {% if item.tipo == "RECEITA" %}
                                 <span class="receita">
-                                    + R$ {{ item.valor }}
+                                    + R$ {{ item.valor|floatformat:2 }}
                                 </span>
                             {% else %}
                                 <span class="despesa">
-                                    - R$ {{ item.valor }}
+                                    - R$ {{ item.valor|floatformat:2 }}
                                 </span>
                             {% endif %}
 
