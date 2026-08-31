@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>
+        Dashboard | Fest Aquathlon 2026
+    </title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #17202a;
+        }
+
+        .header {
+            background: #061a2a;
+            color: white;
+            padding: 25px;
+        }
+
+        .header-content {
+            width: min(1200px,
+                    calc(100% - 30px));
+
+            margin: auto;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .header p {
+            color: #b8c8d1;
+            margin-bottom: 0;
+        }
+
+        .container {
+            width: min(1200px,
+                    calc(100% - 30px));
+
+            margin: 30px auto;
+        }
+
+        .grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 18px;
+        }
+
+        .three {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 18px;
+        }
+
+        .two {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 18px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+
+            border-radius: 16px;
+
+            box-shadow:
+                0 8px 25px rgba(0, 0, 0, .06);
+        }
+
+        .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+
+            color: #72818b;
+        }
+
+        .number {
+            font-size: 32px;
+            font-weight: 900;
+
+            margin-top: 10px;
+
+            color: #061a2a;
+        }
+
+        .money {
+            font-size: 28px;
+            font-weight: 900;
+
+            color: #087443;
+
+            margin-top: 10px;
+        }
+
+        .money.pending {
+            color: #b18200;
+        }
+
+        .money.expense {
+            color: #a32d2d;
+        }
+
+        .section {
+            margin-top: 30px;
+        }
+
+        .section-title {
+            margin-bottom: 15px;
+        }
+
+        .progress {
+            height: 18px;
+
+            background: #e2e7ea;
+
+            border-radius: 20px;
+
+            overflow: hidden;
+
+            margin-top: 15px;
+        }
+
+        .progress-bar {
+            height: 100%;
+
+            background: #ffd21a;
+
+            width: {
+                    {
+                    ocupacao
+                }
+            }
+
+            %;
+        }
+
+        .sport {
+            background: #061a2a;
+
+            color: white;
+
+            border-radius: 16px;
+
+            padding: 25px;
+        }
+
+        .sport strong {
+            display: block;
+
+            font-size: 36px;
+
+            margin-top: 15px;
+
+            color: #ffd21a;
+        }
+
+        .actions {
+            display: flex;
+
+
+            gap: 12px;
+
+            flex-wrap: wrap;
+        }
+
+        .button {
+            display: inline-block;
+
+            padding: 13px 18px;
+
+            border-radius: 10px;
+
+            text-decoration: none;
+
+            font-weight: 900;
+
+            background: #ffd21a;
+
+            color: #061a2a;
+        }
+
+        .button.dark {
+            background: #061a2a;
+            color: white;
+        }
+
+        .info-box {
+            padding: 15px;
+
+            background: #fff9dc;
+
+            border-radius: 10px;
+
+            color: #6c5700;
+
+            font-size: 13px;
+
+            margin-top: 15px;
+        }
+
+        @media(max-width: 900px) {
+
+            .grid,
+            .three,
+            .two {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+            }
+
+        }
+
+        @media(max-width: 600px) {
+
+            .grid,
+            .three,
+            .two {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <header class="header">
+
+        <div class="header-content">
+
+            <h1>
+                FEST AQUATHLON 2026
+            </h1>
+
+            <p>
+                Dashboard administrativo
+            </p>
+
+        </div>
+
+    </header>
+
+    <!-- ==============================
+         ACESSOS
+    =============================== -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Acessos rápidos
+        </h2>
+
+        <div class="actions">
+
+
+            <a href="/admin/inscricoes/inscricao/" class="button">
+                PARTICIPANTES
+            </a>
+
+
+            <a href="/admin/inscricoes/pagamento/" class="button dark">
+                PAGAMENTOS
+            </a>
+
+
+            <a href="/admin/inscricoes/contareceber/" class="button">
+                CONTAS A RECEBER
+            </a>
+
+
+            <a href="/admin/inscricoes/contapagar/" class="button dark">
+                CONTAS A PAGAR
+            </a>
+
+
+            <a href="/admin/inscricoes/fornecedor/" class="button">
+                FORNECEDORES
+            </a>
+
+
+            <a href="/admin/" class="button dark">
+                ADMINISTRATIVO
+            </a>
+
+            <a href="/extrato-financeiro/" class="button">
+                EXTRATO
+            </a>
+
+
+        </div>
+
+    </section>
+
+
+    </main>
+
+</body>
+
+</html>
+
+
+<main class="container">
+    <!-- ==============================
+     ÚLTIMOS LANÇAMENTOS
+=============================== -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Últimos lançamentos
+        </h2>
+
+        <div class="two">
+
+            <!-- CONTAS A RECEBER -->
+
+            <div class="card">
+
+                <h3>
+                    📥 Últimas receitas
+                </h3>
+
+                {% if ultimas_contas_receber %}
+
+                {% for conta in ultimas_contas_receber %}
+
+                <div style="
+                            padding:12px 0;
+                            border-bottom:1px solid #e5e8ea;
+                        ">
+
+                    <strong>
+                        {{ conta.descricao }}
+                    </strong>
+
+                    <div style="
+                                display:flex;
+                                justify-content:space-between;
+                                gap:10px;
+                                margin-top:5px;
+                            ">
+
+                        <small>
+                            {{ conta.status }}
+                        </small>
+
+                        <strong>
+                            + R$ {{ conta.valor }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+                {% else %}
+
+                <p>
+                    Nenhuma receita cadastrada.
+                </p>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- CONTAS A PAGAR -->
+
+            <div class="card">
+
+                <h3>
+                    📤 Últimas despesas
+                </h3>
+
+                {% if ultimas_contas_pagar %}
+
+                {% for conta in ultimas_contas_pagar %}
+
+                <div style="
+                            padding:12px 0;
+                            border-bottom:1px solid #e5e8ea;
+                        ">
+
+                    <strong>
+                        {{ conta.descricao }}
+                    </strong>
+
+                    <div style="
+                                display:flex;
+                                justify-content:space-between;
+                                gap:10px;
+                                margin-top:5px;
+                            ">
+
+                        <small>
+                            {{ conta.status }}
+                        </small>
+
+                        <strong>
+                            - R$ {{ conta.valor }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+                {% else %}
+
+                <p>
+                    Nenhuma despesa cadastrada.
+                </p>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+
+
+    <!-- ==============================
+         CARDS PRINCIPAIS
+    =============================== -->
+
+    <section class="grid">
+
+
+
+
+        <div class="card">
+
+
+
+            <div class="label">
+                Inscritos
+            </div>
+
+            <div class="number">
+                {{ total_inscricoes }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="label">
+                Pagamentos pagos
+            </div>
+
+            <div class="number">
+                {{ total_pagas }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="label">
+                Pagamentos pendentes
+            </div>
+
+            <div class="number">
+                {{ total_pendentes }}
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="label">
+                Vagas restantes
+            </div>
+
+            <div class="number">
+                {{ vagas_restantes }}
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==============================
+         RECEITAS
+    =============================== -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Receitas
+        </h2>
+
+        <div class="three">
+
+
+            <div class="card">
+
+                <div class="label">
+                    Recebido
+                </div>
+
+                <div class="money">
+                    R$ {{ recebido }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    A receber
+                </div>
+
+                <div class="money pending">
+                    R$ {{ a_receber }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    Receita prevista
+                </div>
+
+                <div class="money">
+                    R$ {{ receita_prevista }}
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ==============================
+         DESPESAS
+    =============================== -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Contas a pagar
+        </h2>
+
+        <div class="three">
+
+
+            <div class="card">
+
+                <div class="label">
+                    Contas pagas
+                </div>
+
+                <div class="money">
+                    R$ {{ contas_pagas }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    Contas pendentes
+                </div>
+
+                <div class="money expense">
+                    R$ {{ contas_pendentes }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    Contas vencidas
+                </div>
+
+                <div class="money expense">
+                    R$ {{ contas_vencidas }}
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ==============================
+         RESULTADO
+    =============================== -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Resultado financeiro
+        </h2>
+
+        <div class="two">
+
+
+            <div class="card">
+
+                <div class="label">
+                    Saldo atual
+                </div>
+
+                <div class="money">
+                    R$ {{ saldo_atual }}
+                </div>
+
+                <div class="info-box">
+                    Receitas recebidas menos contas
+                    efetivamente pagas.
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    Resultado previsto
+                </div>
+
+                <div class="money">
+                    R$ {{ resultado_previsto }}
+                </div>
+
+                <div class="info-box">
+                    Receita prevista menos todas as
+                    despesas cadastradas.
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ==============================
+         OCUPAÇÃO
+    =============================== -->
+
+    <section class="section">
+
+        <div class="card">
+
+            <div class="label">
+                Ocupação das vagas
+            </div>
+
+            <div class="number">
+                {{ ocupacao }}%
+            </div>
+
+            <div class="progress">
+
+                <div class="progress-bar"></div>
+
+            </div>
+
+            <p>
+                {{ total_inscricoes }}
+                de
+                {{ vagas_totais }}
+                vagas ocupadas.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==============================
+         MODALIDADES
+    =============================== -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Modalidades
+        </h2>
+
+        <div class="two">
+
+
+            <div class="sport">
+
+                <h3>
+                    MINI SPRINT
+                </h3>
+
+                <strong>
+                    {{ mini_sprint }}
+                </strong>
+
+                <span>
+                    participantes
+                </span>
+
+            </div>
+
+
+            <div class="sport">
+
+                <h3>
+                    SPRINT
+                </h3>
+
+                <strong>
+                    {{ sprint }}
+                </strong>
+
+                <span>
+                    participantes
+                </span>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- ==============================
+         PERFIL
+    =============================== -->
+
+    <section class="section">
+
+        <h2 class="section-title">
+            Perfil dos participantes
+        </h2>
+
+        <div class="three">
+
+
+            <div class="card">
+
+                <div class="label">
+                    Menor de 17
+                </div>
+
+                <div class="number">
+                    {{ menor_17 }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    17 a 59 anos
+                </div>
+
+                <div class="number">
+                    {{ idade_17_59 }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    60+
+                </div>
+
+                <div class="number">
+                    {{ idade_60_mais }}
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+    <section class="section">
+
+        <div class="two">
+
+
+            <div class="card">
+
+                <div class="label">
+                    Militares
+                </div>
+
+                <div class="number">
+                    {{ total_militares }}
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="label">
+                    Pagamentos confirmados
+                </div>
+
+                <div class="number">
+                    {{ percentual_pagamentos }}%
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
