@@ -489,10 +489,14 @@ def extrato_financeiro(request):
     """
     Extrato financeiro por período.
 
-    Mostra somente:
-    - pagamentos de inscrições efetivamente pagos;
-    - contas a receber efetivamente recebidas;
-    - contas a pagar efetivamente pagas.
+    Considera somente movimentações efetivamente realizadas:
+
+    RECEITAS:
+    - Pagamentos de inscrições aprovados
+    - Contas a receber com status RECEBIDO
+
+    DESPESAS:
+    - Contas a pagar com status PAGO
     """
 
     hoje = timezone.localdate()
@@ -531,66 +535,30 @@ def extrato_financeiro(request):
         inicio, fim = fim, inicio
 
     # =====================================================
-    # PAGAMENTOS DE INSCRIÇÕES
-    # =====================================================
-
-    pagamentos = (
-        Pagamento.objects
-        .filter(
-            status=Pagamento.PAGO,
-            pago_em__isnull=False,
-            pago_em__gte=inicio,
-            pago_em__lte=fim,
-        )
-        .select_related("inscricao")
-        .order_by("pago_em")
-    )
-
-    # =====================================================
-    # CONTAS A RECEBER
-    # =====================================================
-
-    contas_receber = (
-        ContaReceber.objects
-        .filter(
-            status=ContaReceber.RECEBIDO,
-            recebido_em__isnull=False,
-            recebido_em__gte=inicio,
-            recebido_em__lte=fim,
-        )
-        .order_by("recebido_em")
-    )
-
-    # =====================================================
-    # CONTAS A PAGAR
-    # =====================================================
-
-    contas_pagar = (
-        ContaPagar.objects
-        .filter(
-            status=ContaPagar.PAGO,
-            pago_em__isnull=False,
-            pago_em__gte=inicio,
-            pago_em__lte=fim,
-        )
-        .select_related("fornecedor")
-        .order_by("pago_em")
-    )
-
-    # =====================================================
     # LANÇAMENTOS
     # =====================================================
 
     lancamentos = []
 
-    # -----------------------------------------------------
+    # =====================================================
     # PAGAMENTOS DAS INSCRIÇÕES
-    # -----------------------------------------------------
+    # =====================================================
+
+    pagamentos = (
+        Pagamento.objects
+        .select_related("inscricao")
+        .filter(
+            status=Pagamento.PAGO,
+            pago_em__date__gte=inicio,
+            pago_em__date__lte=fim,
+        )
+        .order_by("pago_em")
+    )
 
     for pagamento in pagamentos:
 
         lancamentos.append({
-            "data": pagamento.pago_em,
+            "data": pagamento.pago_em.date(),
             "descricao": (
                 f"Inscrição #{pagamento.inscricao.numero} - "
                 f"{pagamento.inscricao.nome}"
@@ -600,11 +568,21 @@ def extrato_financeiro(request):
             "valor": pagamento.valor,
         })
 
-    # -----------------------------------------------------
+    # =====================================================
     # CONTAS A RECEBER
-    # -----------------------------------------------------
+    # =====================================================
 
-    for conta in contas_receber:
+    receitas = (
+        ContaReceber.objects
+        .filter(
+            status=ContaReceber.RECEBIDO,
+            recebido_em__gte=inicio,
+            recebido_em__lte=fim,
+        )
+        .order_by("recebido_em")
+    )
+
+    for conta in receitas:
 
         lancamentos.append({
             "data": conta.recebido_em,
@@ -614,15 +592,36 @@ def extrato_financeiro(request):
             "valor": conta.valor,
         })
 
-    # -----------------------------------------------------
+    # =====================================================
     # CONTAS A PAGAR
-    # -----------------------------------------------------
+    # =====================================================
 
-    for conta in contas_pagar:
+    despesas = (
+        ContaPagar.objects
+        .select_related("fornecedor")
+        .filter(
+            status=ContaPagar.PAGO,
+            pago_em__gte=inicio,
+            pago_em__lte=fim,
+        )
+        .order_by("pago_em")
+    )
+
+    for conta in despesas:
+
+        fornecedor = ""
+
+        if conta.fornecedor:
+            fornecedor = conta.fornecedor.nome
+
+        descricao = conta.descricao
+
+        if fornecedor:
+            descricao = f"{fornecedor} - {descricao}"
 
         lancamentos.append({
             "data": conta.pago_em,
-            "descricao": conta.descricao,
+            "descricao": descricao,
             "categoria": conta.categoria,
             "tipo": "DESPESA",
             "valor": conta.valor,
