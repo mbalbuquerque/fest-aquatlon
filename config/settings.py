@@ -17,8 +17,6 @@ ALLOWED_HOSTS = [
     "fest-aquatlon.onrender.com",
 ]
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = "dev-key-change-in-production"
 
 
 INSTALLED_APPS = [
