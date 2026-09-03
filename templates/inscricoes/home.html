@@ -1,8 +1,298 @@
-{% load static %}<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fest Aquathlon 2026</title><link rel="stylesheet" href="{% static 'css/style.css' %}"></head><body>
-<header class="topbar"><div class="container nav"><a class="brand" href="/"><span class="brand-mark">FA</span> FEST AQUATHLON</a><nav><a href="#evento">Evento</a><a href="#modalidades">Modalidades</a><a href="#valores">Valores</a><a href="#kit">Kit</a><a class="btn btn-primary" href="{% url 'nova_inscricao' %}">INSCREVA-SE</a></nav></div></header>
-<section class="hero" id="evento"><div class="hero-image"><img src="{% static 'images/hero-evento.svg' %}" alt="Fest Aquathlon"></div><div class="hero-overlay"></div><div class="container hero-content"><small>NATAÇÃO + CORRIDA</small><h1>FEST<br><span>AQUATHLON</span></h1><p>Evento esportivo festivo com premiação.</p><div class="event-meta"><div><strong>20 DE DEZEMBRO</strong><small>2026</small></div><div><strong>PRAIA DO QUARTEL</strong><small>BAIRRO NOVO • OLINDA</small></div><div><strong>06:00</strong><small>PRIMEIRA LARGADA</small></div></div><p><a class="btn btn-primary" href="{% url 'nova_inscricao' %}">GARANTIR MINHA VAGA</a></p></div></section>
-<section class="quick-info"><div class="container info-grid"><div>🏊 <b>Mini Sprint<br><small>500m + 2,5km</small></b></div><div>🏃 <b>Sprint<br><small>1km + 5km</small></b></div><div>🏅 <b>Premiação<br><small>Evento festivo</small></b></div><div>🎟️ <b>180 vagas<br><small>Limitadas</small></b></div></div></section>
-<section class="section" id="modalidades"><div class="container"><div class="section-heading"><small>ESCOLHA SEU DESAFIO</small><h2>Modalidades</h2></div><div class="cards"><article class="sport-card"><h3>Mini Sprint</h3><p>500 metros de natação + 2,5 km de corrida.</p></article><article class="sport-card featured"><h3>Sprint</h3><p>1 km de natação + 5 km de corrida.</p></article></div></div></section>
-<section class="section lots-section" id="valores"><div class="container"><div class="section-heading"><small>INSCRIÇÕES</small><h2>Lotes e valores</h2></div><div class="lots-grid"><article class="lot-card"><b>LOTE PROMOCIONAL</b><h3>04/09 a 20/09</h3><strong>R$ 145,00 + R$ 6,80</strong></article><article class="lot-card"><b>2º LOTE — 21/09 a 07/11</b><p>R$ 145 + taxa — menor de 17 / maior de 60</p><p>R$ 167 + taxa — 17 a 59</p><p>R$ 155 + taxa — militares comprovados</p></article></div><div class="age-rule"><b>12+</b> Idade mínima: 12 anos completos em 2026. Menores de 18 precisam de autorização.</div></div></section>
-<section class="section kit-section" id="kit"><div class="container"><div class="section-heading"><small>KIT ATLETA</small><h2>Incluso na inscrição</h2></div><div class="kit-grid">{% for item in "Camisa,Touca,Pulseira,Seguro atleta,Numeração,Número de peito,Chip,Medalha de participação"|cut:""|slice:":0" %}{% endfor %}<div class="kit-item">🎽 Camisa</div><div class="kit-item">🏊 Touca</div><div class="kit-item">🪪 Pulseira</div><div class="kit-item">🛡️ Seguro atleta</div><div class="kit-item">🔢 Numeração</div><div class="kit-item">🏃 Número de peito</div><div class="kit-item">⏱️ Chip</div><div class="kit-item">🏅 Medalha</div></div></div></section>
-<section class="cta"><div class="container cta-inner"><h2>Garanta sua participação.</h2><a class="btn btn-primary" href="{% url 'nova_inscricao' %}">INSCREVA-SE</a></div></section></body></html>
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>Fest Aquathlon 2026</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="container nav">
+
+        <a class="brand" href="/">
+            <span class="brand-mark">FA</span>
+            FEST AQUATHLON
+        </a>
+
+        <nav>
+            <a href="#evento">Evento</a>
+            <a href="#modalidades">Modalidades</a>
+            <a href="#valores">Valores</a>
+            <a href="#kit">Kit</a>
+
+            <!-- ACESSO ADMINISTRATIVO -->
+            <a href="/admin/" class="admin-access">
+                🔐 Área Administrativa
+            </a>
+
+            <a class="btn btn-primary" href="{% url 'nova_inscricao' %}">
+                INSCREVA-SE
+            </a>
+        </nav>
+
+    </div>
+</header>
+
+
+<section class="hero" id="evento">
+
+    <div class="hero-image">
+        <img src="{% static 'images/hero-evento.svg' %}" alt="Fest Aquathlon">
+    </div>
+
+    <div class="hero-overlay"></div>
+
+    <div class="container hero-content">
+
+        <small>NATAÇÃO + CORRIDA</small>
+
+        <h1>
+            FEST<br>
+            <span>AQUATHLON</span>
+        </h1>
+
+        <p>Evento esportivo festivo com premiação.</p>
+
+        <div class="event-meta">
+
+            <div>
+                <strong>20 DE DEZEMBRO</strong>
+                <small>2026</small>
+            </div>
+
+            <div>
+                <strong>PRAIA DO QUARTEL</strong>
+                <small>BAIRRO NOVO • OLINDA</small>
+            </div>
+
+            <div>
+                <strong>06:00</strong>
+                <small>PRIMEIRA LARGADA</small>
+            </div>
+
+        </div>
+
+        <p>
+            <a class="btn btn-primary" href="{% url 'nova_inscricao' %}">
+                GARANTIR MINHA VAGA
+            </a>
+        </p>
+
+    </div>
+</section>
+
+
+<section class="quick-info">
+
+    <div class="container info-grid">
+
+        <div>
+            🏊
+            <b>
+                Mini Sprint<br>
+                <small>500m + 2,5km</small>
+            </b>
+        </div>
+
+        <div>
+            🏃
+            <b>
+                Sprint<br>
+                <small>1km + 5km</small>
+            </b>
+        </div>
+
+        <div>
+            🏅
+            <b>
+                Premiação<br>
+                <small>Evento festivo</small>
+            </b>
+        </div>
+
+        <div>
+            🎟️
+            <b>
+                180 vagas<br>
+                <small>Limitadas</small>
+            </b>
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="section" id="modalidades">
+
+    <div class="container">
+
+        <div class="section-heading">
+            <small>ESCOLHA SEU DESAFIO</small>
+            <h2>Modalidades</h2>
+        </div>
+
+        <div class="cards">
+
+            <article class="sport-card">
+                <h3>Mini Sprint</h3>
+                <p>500 metros de natação + 2,5 km de corrida.</p>
+            </article>
+
+            <article class="sport-card featured">
+                <h3>Sprint</h3>
+                <p>1 km de natação + 5 km de corrida.</p>
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="section lots-section" id="valores">
+
+    <div class="container">
+
+        <div class="section-heading">
+            <small>INSCRIÇÕES</small>
+            <h2>Lotes e valores</h2>
+        </div>
+
+        <div class="lots-grid">
+
+            <article class="lot-card">
+
+                <b>LOTE PROMOCIONAL</b>
+
+                <h3>04/09 a 20/09</h3>
+
+                <strong>
+                    R$ 145,00 + R$ 6,80
+                </strong>
+
+            </article>
+
+
+            <article class="lot-card">
+
+                <b>2º LOTE — 21/09 a 07/11</b>
+
+                <p>
+                    R$ 145 + taxa —
+                    menor de 17 / maior de 60
+                </p>
+
+                <p>
+                    R$ 167 + taxa —
+                    17 a 59
+                </p>
+
+                <p>
+                    R$ 155 + taxa —
+                    militares comprovados
+                </p>
+
+            </article>
+
+        </div>
+
+
+        <div class="age-rule">
+
+            <b>12+</b>
+
+            Idade mínima: 12 anos completos em 2026.
+            Menores de 18 precisam de autorização.
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="section kit-section" id="kit">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <small>KIT ATLETA</small>
+
+            <h2>Incluso na inscrição</h2>
+
+        </div>
+
+
+        <div class="kit-grid">
+
+            <div class="kit-item">
+                🎽 Camisa
+            </div>
+
+            <div class="kit-item">
+                🏊 Touca
+            </div>
+
+            <div class="kit-item">
+                🪪 Pulseira
+            </div>
+
+            <div class="kit-item">
+                🛡️ Seguro atleta
+            </div>
+
+            <div class="kit-item">
+                🔢 Numeração
+            </div>
+
+            <div class="kit-item">
+                🏃 Número de peito
+            </div>
+
+            <div class="kit-item">
+                ⏱️ Chip
+            </div>
+
+            <div class="kit-item">
+                🏅 Medalha
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="cta">
+
+    <div class="container cta-inner">
+
+        <h2>
+            Garanta sua participação.
+        </h2>
+
+        <a class="btn btn-primary"
+           href="{% url 'nova_inscricao' %}">
+
+            INSCREVA-SE
+
+        </a>
+
+    </div>
+
+</section>
+
+
+</body>
+</html>
