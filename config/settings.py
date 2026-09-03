@@ -14,7 +14,7 @@ DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
-    ".onrender.com",
+    "fest-aquatlon.onrender.com",
 ]
 
 BASE_DIR = Path(__file__).resolve().parent.parent
