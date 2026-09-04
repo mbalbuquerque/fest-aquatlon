@@ -23,7 +23,7 @@ from .models import (
     ContaPagar,
     ContaReceber,
 )
-from .pagamentos import obter_link_pagamento
+from .pagamentos import criar_preferencia_pagamento
 
 
 def home(request):
@@ -110,16 +110,51 @@ def pagamento(request, numero):
         numero=numero,
     )
 
-    pagamento, _ = Pagamento.objects.get_or_create(
-        inscricao=inscricao,
-        defaults={
-            "valor": inscricao.valor_total,
-            "link_pagamento": obter_link_pagamento(
-                inscricao
-            ),
-            "status": Pagamento.PENDENTE,
-        },
+    pagamento = (
+        Pagamento.objects
+        .filter(inscricao=inscricao)
+        .first()
     )
+
+    if not pagamento:
+        try:
+            link_pagamento = (
+                criar_preferencia_pagamento(inscricao)
+            )
+
+        except requests.RequestException as exc:
+            return render(
+                request,
+                "registration/pagamento.html",
+                {
+                    "inscricao": inscricao,
+                    "pagamento": None,
+                    "erro_pagamento": (
+                        "Não foi possível iniciar o "
+                        "pagamento no Mercado Pago."
+                    ),
+                },
+                status=502,
+            )
+
+        except RuntimeError as exc:
+            return render(
+                request,
+                "registration/pagamento.html",
+                {
+                    "inscricao": inscricao,
+                    "pagamento": None,
+                    "erro_pagamento": str(exc),
+                },
+                status=500,
+            )
+
+        pagamento = Pagamento.objects.create(
+            inscricao=inscricao,
+            valor=inscricao.valor_total,
+            link_pagamento=link_pagamento,
+            status=Pagamento.PENDENTE,
+        )
 
     return render(
         request,
@@ -990,32 +1025,24 @@ def relatorios(request):
 @csrf_exempt
 def webhook_mercadopago(request):
     """
-    Recebe notificações do Mercado Pago.
-
-    IMPORTANTE:
-    Com os links de pagamento estáticos usados atualmente,
-    o webhook só consegue atualizar automaticamente uma inscrição
-    quando o ID da transação já estiver associado ao pagamento.
-
-    Para confirmação automática por atleta, o ideal é migrar para
-    preferências únicas por inscrição ou outra estratégia que gere
-    uma identificação individual.
+    Recebe notificações de pagamento do Mercado Pago
+    e atualiza automaticamente a inscrição correspondente.
     """
 
     if request.method != "POST":
         return JsonResponse(
-            {
-                "detail": "Método não permitido",
-            },
+            {"detail": "Método não permitido"},
             status=405,
         )
 
     try:
         body = json.loads(
-            request.body.decode("utf-8")
-            or "{}"
+            request.body.decode("utf-8") or "{}"
         )
-    except (json.JSONDecodeError, UnicodeDecodeError):
+    except (
+        json.JSONDecodeError,
+        UnicodeDecodeError,
+    ):
         body = {}
 
     tipo = (
@@ -1028,12 +1055,10 @@ def webhook_mercadopago(request):
         or body.get("data", {}).get("id")
     )
 
-    # Ignora eventos que não sejam de pagamento.
+    # Outros eventos não interessam neste endpoint.
     if tipo and tipo != "payment":
         return JsonResponse(
-            {
-                "received": True,
-            }
+            {"received": True}
         )
 
     if not payment_id:
@@ -1044,16 +1069,17 @@ def webhook_mercadopago(request):
             }
         )
 
-    # =====================================================
-    # VALIDAÇÃO DA ASSINATURA
-    # =====================================================
+    payment_id = str(payment_id)
+
+    # ==================================================
+    # VALIDAR ASSINATURA DO WEBHOOK
+    # ==================================================
 
     secret = os.getenv(
         "MERCADOPAGO_WEBHOOK_SECRET"
     )
 
     if secret:
-
         x_signature = request.headers.get(
             "x-signature",
             "",
@@ -1068,8 +1094,7 @@ def webhook_mercadopago(request):
         v1 = None
 
         for item in x_signature.split(","):
-
-            key, _, value = item.partition("=")
+            key, _, value = item.strip().partition("=")
 
             if key == "ts":
                 ts = value
@@ -1079,9 +1104,7 @@ def webhook_mercadopago(request):
 
         if not ts or not v1:
             return JsonResponse(
-                {
-                    "detail": "Assinatura inválida.",
-                },
+                {"detail": "Assinatura inválida."},
                 status=401,
             )
 
@@ -1102,15 +1125,13 @@ def webhook_mercadopago(request):
             v1,
         ):
             return JsonResponse(
-                {
-                    "detail": "Assinatura inválida.",
-                },
+                {"detail": "Assinatura inválida."},
                 status=401,
             )
 
-    # =====================================================
-    # ACCESS TOKEN
-    # =====================================================
+    # ==================================================
+    # CONSULTAR PAGAMENTO NA API DO MERCADO PAGO
+    # ==================================================
 
     access_token = os.getenv(
         "MERCADOPAGO_ACCESS_TOKEN"
@@ -1119,19 +1140,13 @@ def webhook_mercadopago(request):
     if not access_token:
         return JsonResponse(
             {
-                "received": True,
-                "payment_id": payment_id,
                 "detail":
-                    "Access Token não configurado.",
-            }
+                    "MERCADOPAGO_ACCESS_TOKEN não configurado.",
+            },
+            status=500,
         )
 
-    # =====================================================
-    # CONSULTA AO MERCADO PAGO
-    # =====================================================
-
     try:
-
         response = requests.get(
             (
                 "https://api.mercadopago.com/"
@@ -1141,64 +1156,112 @@ def webhook_mercadopago(request):
                 "Authorization":
                     f"Bearer {access_token}",
             },
-            timeout=15,
+            timeout=20,
         )
 
         response.raise_for_status()
-
         data = response.json()
 
     except requests.RequestException:
-
         return JsonResponse(
             {
                 "detail":
-                    "Não foi possível consultar o Mercado Pago.",
+                    "Falha ao consultar o Mercado Pago.",
             },
             status=502,
         )
 
-    status_mp = data.get("status")
+    # ==================================================
+    # IDENTIFICAR INSCRIÇÃO
+    # ==================================================
 
-    # =====================================================
-    # LOCALIZA PAGAMENTO
-    # =====================================================
+    external_reference = data.get(
+        "external_reference"
+    )
 
-    try:
-
-        pagamento = (
-            Pagamento.objects
-            .select_related("inscricao")
-            .get(
-                identificador_transacao=
-                    str(payment_id)
-            )
-        )
-
-    except Pagamento.DoesNotExist:
-
+    if not external_reference:
         return JsonResponse(
             {
                 "received": True,
                 "payment_id": payment_id,
-                "status": status_mp,
                 "detail":
-                    "Pagamento ainda não associado a uma inscrição.",
+                    "Pagamento sem external_reference.",
             }
         )
 
-    # =====================================================
-    # ATUALIZA DADOS
-    # =====================================================
+    try:
+        inscricao = Inscricao.objects.get(
+            numero=external_reference
+        )
+
+    except Inscricao.DoesNotExist:
+        return JsonResponse(
+            {
+                "received": True,
+                "payment_id": payment_id,
+                "external_reference":
+                    external_reference,
+                "detail":
+                    "Inscrição não encontrada.",
+            }
+        )
+
+    # ==================================================
+    # PAGAMENTO LOCAL
+    # ==================================================
+
+    pagamento, _ = (
+        Pagamento.objects.get_or_create(
+            inscricao=inscricao,
+            defaults={
+                "valor": inscricao.valor_total,
+                "link_pagamento": (
+                    "https://www.mercadopago.com.br/"
+                ),
+                "status": Pagamento.PENDENTE,
+            },
+        )
+    )
+
+    # ==================================================
+    # VALIDAÇÃO DO VALOR
+    # ==================================================
+
+    valor_mp = data.get("transaction_amount")
+
+    try:
+        valor_mp = Decimal(str(valor_mp))
+    except Exception:
+        valor_mp = None
+
+    if (
+        valor_mp is not None
+        and valor_mp != pagamento.valor
+    ):
+        return JsonResponse(
+            {
+                "received": True,
+                "payment_id": payment_id,
+                "detail":
+                    "Valor do pagamento divergente.",
+            },
+            status=400,
+        )
+
+    # ==================================================
+    # ATUALIZAÇÃO
+    # ==================================================
+
+    status_mp = data.get("status")
+
+    pagamento.identificador_transacao = (
+        payment_id
+    )
 
     pagamento.metodo = (
         data.get("payment_method_id")
         or data.get("payment_type_id")
         or ""
-    )
-
-    pagamento.identificador_transacao = (
-        str(payment_id)
     )
 
     if status_mp == "approved":
@@ -1208,37 +1271,27 @@ def webhook_mercadopago(request):
         if not pagamento.pago_em:
             pagamento.pago_em = timezone.now()
 
-        pagamento.inscricao.status = (
-            Inscricao.PAGO
-        )
+        if inscricao.status != Inscricao.PAGO:
+            inscricao.status = Inscricao.PAGO
 
-        pagamento.inscricao.save(
-            update_fields=[
-                "status",
-                "atualizado_em",
-            ]
-        )
+            inscricao.save(
+                update_fields=[
+                    "status",
+                    "atualizado_em",
+                ]
+            )
 
     elif status_mp in (
         "cancelled",
         "rejected",
     ):
-
-        pagamento.status = (
-            Pagamento.CANCELADO
-        )
+        pagamento.status = Pagamento.CANCELADO
 
     elif status_mp == "expired":
-
-        pagamento.status = (
-            Pagamento.EXPIRADO
-        )
+        pagamento.status = Pagamento.EXPIRADO
 
     else:
-
-        pagamento.status = (
-            Pagamento.PENDENTE
-        )
+        pagamento.status = Pagamento.PENDENTE
 
     pagamento.save()
 
@@ -1246,10 +1299,11 @@ def webhook_mercadopago(request):
         {
             "received": True,
             "payment_id": payment_id,
+            "external_reference":
+                external_reference,
             "status": status_mp,
         }
     )
-    
 @staff_member_required
 def exportar_excel(request):
 

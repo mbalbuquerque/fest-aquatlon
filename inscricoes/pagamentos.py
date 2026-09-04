@@ -1,48 +1,94 @@
-LINK_MP_PROMOCIONAL = (
-    "https://www.mercadopago.com.br/checkout/v1/payment/"
-    "redirect/dbf6e08c-c02f-4748-8490-5dab75f0c8f4/"
-    "payment-option-form/?source=link&router-request-id="
-    "91b8fe7f-4b03-4864-84c7-1d492186d5e4&preference-id="
-    "2266606201-a923b168-23d1-41bf-90f5-d6512843d24b"
-    "&p=15b63067ae3a3b3ce257d70988192b06"
+import os
+import requests
+
+
+MERCADOPAGO_PREFERENCES_URL = (
+    "https://api.mercadopago.com/checkout/preferences"
 )
 
-LINK_MP_60_MENOR = (
-    "https://www.mercadopago.com.br/checkout/v1/payment/"
-    "redirect/?source=link&router-request-id="
-    "22d044ed-0287-4773-81e3-a2d53949cc1c&preference-id="
-    "2266606201-788f2cc1-da2d-48e2-96cc-fe383a08c512"
-)
-
-LINK_MP_MILITAR = (
-    "https://www.mercadopago.com.br/checkout/v1/payment/"
-    "redirect/?source=link&router-request-id="
-    "fe5d5c8b-e30a-4d0f-807b-f4a5cd6b1143&preference-id="
-    "2266606201-8797c72e-8ef1-4841-be0c-c7bfb912e406"
-)
-
-LINK_MP_17_59 = (
-    "https://www.mercadopago.com.br/checkout/v1/payment/"
-    "redirect/?source=link&router-request-id="
-    "f6d131e2-1dee-404b-aa36-dbcf961f1c8c&preference-id="
-    "2266606201-6f5df32d-f9a4-4c2d-a62d-e755bad46223"
-)
+SITE_URL = os.getenv(
+    "SITE_URL",
+    "https://fest-aquatlon.onrender.com",
+).rstrip("/")
 
 
-def obter_link_pagamento(inscricao):
+def criar_preferencia_pagamento(inscricao):
+    """
+    Cria uma preferência exclusiva do Mercado Pago
+    para uma inscrição do FEST AQUATHLON.
+    """
 
-    data = inscricao.criado_em.date()
-    idade = inscricao.idade_no_evento
+    access_token = os.getenv("MERCADOPAGO_ACCESS_TOKEN")
 
-    # Lote promocional
-    if data <= __import__("datetime").date(2026, 9, 20):
-        return LINK_MP_PROMOCIONAL
+    if not access_token:
+        raise RuntimeError(
+            "MERCADOPAGO_ACCESS_TOKEN não configurado."
+        )
 
-    # Segundo lote
-    if inscricao.militar:
-        return LINK_MP_MILITAR
+    payload = {
+        "items": [
+            {
+                "id": inscricao.numero,
+                "title": (
+                    f"FEST AQUATHLON 2026 - "
+                    f"{inscricao.numero}"
+                ),
+                "quantity": 1,
+                "currency_id": "BRL",
+                "unit_price": float(inscricao.valor_total),
+            }
+        ],
 
-    if idade < 17 or idade >= 60:
-        return LINK_MP_60_MENOR
+        # Identificador que permitirá ao webhook
+        # descobrir exatamente qual inscrição foi paga.
+        "external_reference": inscricao.numero,
 
-    return LINK_MP_17_59
+        "payer": {
+            "name": inscricao.nome,
+            "email": inscricao.email,
+        },
+
+        "back_urls": {
+            "success": (
+                f"{SITE_URL}/inscricao/sucesso/"
+                f"{inscricao.numero}/"
+            ),
+            "pending": (
+                f"{SITE_URL}/pagamento/"
+                f"{inscricao.numero}/"
+            ),
+            "failure": (
+                f"{SITE_URL}/pagamento/"
+                f"{inscricao.numero}/"
+            ),
+        },
+
+        "auto_return": "approved",
+
+        "metadata": {
+            "inscricao": inscricao.numero,
+        },
+    }
+
+    response = requests.post(
+        MERCADOPAGO_PREFERENCES_URL,
+        json=payload,
+        headers={
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+        },
+        timeout=20,
+    )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    init_point = data.get("init_point")
+
+    if not init_point:
+        raise RuntimeError(
+            "Mercado Pago não retornou init_point."
+        )
+
+    return init_point

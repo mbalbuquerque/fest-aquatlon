@@ -9,9 +9,7 @@ from .models import (
     ContaReceber,
 )
 
-from .pagamentos import (
-    obter_link_pagamento,
-)
+
 
 
 @admin.register(Inscricao)
