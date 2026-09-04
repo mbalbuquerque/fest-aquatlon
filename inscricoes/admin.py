@@ -8,8 +8,7 @@ from .models import (
     ContaPagar,
     ContaReceber,
 )
-
-
+from .pagamentos import criar_preferencia_pagamento
 
 
 @admin.register(Inscricao)
@@ -56,7 +55,6 @@ class InscricaoAdmin(admin.ModelAdmin):
     )
 
     fieldsets = (
-
         (
             "Dados do atleta",
             {
@@ -70,7 +68,6 @@ class InscricaoAdmin(admin.ModelAdmin):
                 )
             },
         ),
-
         (
             "Condição especial",
             {
@@ -81,7 +78,6 @@ class InscricaoAdmin(admin.ModelAdmin):
                 )
             },
         ),
-
         (
             "Financeiro",
             {
@@ -93,7 +89,6 @@ class InscricaoAdmin(admin.ModelAdmin):
                 )
             },
         ),
-
         (
             "Controle",
             {
@@ -103,104 +98,50 @@ class InscricaoAdmin(admin.ModelAdmin):
                 )
             },
         ),
-
     )
 
-    @admin.display(
-        description="Idade"
-    )
+    @admin.display(description="Idade")
     def idade(self, obj):
-
         return obj.idade_no_evento
 
-    @admin.display(
-        description="Pagamento"
-    )
+    @admin.display(description="Pagamento")
     def status_pagamento(self, obj):
-
         try:
-
             pagamento = obj.pagamento
 
         except Pagamento.DoesNotExist:
+            try:
+                link_pagamento = criar_preferencia_pagamento(obj)
+            except Exception:
+                link_pagamento = (
+                    "https://fest-aquatlon.onrender.com/"
+                )
 
-            return "Sem pagamento"
-
-        return pagamento.get_status_display()
-
-    def save_model(
-        self,
-        request,
-        obj,
-        form,
-        change,
-    ):
-
-        # Salva a inscrição
-        super().save_model(
-            request,
-            obj,
-            form,
-            change,
-        )
-
-        # Verifica se existe pagamento
-        try:
-
-            pagamento = obj.pagamento
-
-        except Pagamento.DoesNotExist:
-
-            # Cria automaticamente
             pagamento = Pagamento.objects.create(
-
                 inscricao=obj,
-
                 valor=obj.valor_total,
-
-                link_pagamento=(
-                    obter_link_pagamento(obj)
-                ),
-
+                link_pagamento=link_pagamento,
                 status=Pagamento.PENDENTE,
             )
 
-        # Sincronização
-        # Inscrição → Pagamento
-
         if obj.status == Inscricao.PAGO:
-
-            pagamento.status = (
-                Pagamento.PAGO
-            )
+            pagamento.status = Pagamento.PAGO
 
             if not pagamento.pago_em:
-
-                pagamento.pago_em = (
-                    timezone.now()
-                )
+                pagamento.pago_em = timezone.now()
 
         elif obj.status == Inscricao.CANCELADO:
-
-            pagamento.status = (
-                Pagamento.CANCELADO
-            )
-
+            pagamento.status = Pagamento.CANCELADO
             pagamento.pago_em = None
 
         else:
-
-            pagamento.status = (
-                Pagamento.PENDENTE
-            )
-
+            pagamento.status = Pagamento.PENDENTE
             pagamento.pago_em = None
 
-        pagamento.valor = (
-            obj.valor_total
-        )
-
+        pagamento.valor = obj.valor_total
         pagamento.save()
+
+        return pagamento.get_status_display()
 
 
 @admin.register(Pagamento)
@@ -242,30 +183,19 @@ class PagamentoAdmin(admin.ModelAdmin):
     ):
 
         if obj.status == Pagamento.PAGO:
-
             obj.pago_em = (
                 obj.pago_em
                 or timezone.now()
             )
 
-            obj.inscricao.status = (
-                Inscricao.PAGO
-            )
+            obj.inscricao.status = Inscricao.PAGO
 
         elif obj.status == Pagamento.CANCELADO:
-
-            obj.inscricao.status = (
-                Inscricao.CANCELADO
-            )
-
+            obj.inscricao.status = Inscricao.CANCELADO
             obj.pago_em = None
 
         else:
-
-            obj.inscricao.status = (
-                Inscricao.PENDENTE
-            )
-
+            obj.inscricao.status = Inscricao.PENDENTE
             obj.pago_em = None
 
         obj.inscricao.save()
@@ -276,7 +206,8 @@ class PagamentoAdmin(admin.ModelAdmin):
             form,
             change,
         )
-        
+
+
 @admin.register(Fornecedor)
 class FornecedorAdmin(admin.ModelAdmin):
 
@@ -330,20 +261,19 @@ class ContaPagarAdmin(admin.ModelAdmin):
         "marcar_como_pagas",
     ]
 
-    @admin.action(description="Marcar selecionadas como pagas")
+    @admin.action(
+        description="Marcar selecionadas como pagas"
+    )
     def marcar_como_pagas(self, request, queryset):
 
         hoje = timezone.localdate()
-
         atualizadas = 0
 
         for conta in queryset:
 
             if conta.status != ContaPagar.PAGO:
-
                 conta.status = ContaPagar.PAGO
                 conta.pago_em = hoje
-
                 conta.save()
 
                 atualizadas += 1
@@ -351,8 +281,7 @@ class ContaPagarAdmin(admin.ModelAdmin):
         self.message_user(
             request,
             f"{atualizadas} conta(s) marcada(s) como paga(s)."
-        )    
-    date_hierarchy = "vencimento"
+        )
 
 
 @admin.register(ContaReceber)
@@ -385,20 +314,23 @@ class ContaReceberAdmin(admin.ModelAdmin):
         "marcar_como_recebidas",
     ]
 
-    @admin.action(description="Marcar selecionadas como recebidas")
-    def marcar_como_recebidas(self, request, queryset):
+    @admin.action(
+        description="Marcar selecionadas como recebidas"
+    )
+    def marcar_como_recebidas(
+        self,
+        request,
+        queryset,
+    ):
 
         hoje = timezone.localdate()
-
         atualizadas = 0
 
         for conta in queryset:
 
             if conta.status != ContaReceber.RECEBIDO:
-
                 conta.status = ContaReceber.RECEBIDO
                 conta.recebido_em = hoje
-
                 conta.save()
 
                 atualizadas += 1
@@ -407,7 +339,3 @@ class ContaReceberAdmin(admin.ModelAdmin):
             request,
             f"{atualizadas} conta(s) marcada(s) como recebida(s)."
         )
-
-    date_hierarchy = "vencimento"
-
-    

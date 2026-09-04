@@ -36,7 +36,7 @@ def home(request):
 def nova_inscricao(request):
     """
     Cadastro público do atleta.
-    Cria a inscrição e, em seguida, o respectivo pagamento.
+    Salva a inscrição e redireciona para o pagamento.
     """
 
     vagas = (
@@ -62,32 +62,8 @@ def nova_inscricao(request):
         inscricao = form.save(
             commit=False
         )
+
         inscricao.save()
-
-        # Cria o pagamento da inscrição.
-        pagamento, _ = Pagamento.objects.get_or_create(
-            inscricao=inscricao,
-            defaults={
-                "valor": inscricao.valor_total,
-                "link_pagamento": obter_link_pagamento(
-                    inscricao
-                ),
-                "status": Pagamento.PENDENTE,
-            },
-        )
-
-        # Garante que o valor/link acompanhem a inscrição.
-        pagamento.valor = inscricao.valor_total
-        pagamento.link_pagamento = obter_link_pagamento(
-            inscricao
-        )
-        pagamento.save(
-            update_fields=[
-                "valor",
-                "link_pagamento",
-                "atualizado_em",
-            ]
-        )
 
         return redirect(
             "pagamento",
