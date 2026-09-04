@@ -4,21 +4,37 @@ from .models import EVENT_DATE, Inscricao
 
 
 class InscricaoForm(forms.ModelForm):
+
     class Meta:
         model = Inscricao
+
         fields = [
             "nome",
             "telefone",
             "email",
             "data_nascimento",
             "modalidade",
+            "tamanho_camisa",
             "militar",
             "comprovante_militar",
             "autorizacao_responsavel",
         ]
+
         widgets = {
             "data_nascimento": forms.DateInput(attrs={"type": "date"}),
+            "tamanho_camisa": forms.Select(),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["tamanho_camisa"].required = True
+        self.fields["tamanho_camisa"].label = "Tamanho da camisa do kit"
+
+        self.fields["tamanho_camisa"].choices = [
+            ("", "Selecione o tamanho"),
+            *Inscricao.TAMANHOS_CAMISA,
+        ]
 
     def clean(self):
         cleaned_data = super().clean()

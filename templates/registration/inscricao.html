@@ -1,1 +1,178 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Inscrição</title><link rel="stylesheet" href="/static/css/style.css"><style>.page{padding:60px 0;background:#f5f7f8;min-height:100vh}.card{max-width:820px;margin:auto;background:#fff;padding:35px;border-radius:20px}.row{display:grid;grid-template-columns:1fr 1fr;gap:18px}.field{margin:18px 0}.field label{display:block;font-weight:bold;font-size:13px;margin-bottom:7px}.field input,.field select{width:100%;padding:12px;border:1px solid #ccd5db;border-radius:8px}.errors{color:#a22;font-size:12px}.slot{background:#fff1a8;padding:12px;border-radius:8px}@media(max-width:650px){.row{grid-template-columns:1fr}}</style></head><body><header class="topbar"><div class="container nav"><a class="brand" href="/">FA FEST AQUATHLON</a></div></header><main class="page"><div class="container"><div class="card"><h1>Dados do atleta</h1><p class="slot">{{ vagas }} vaga(s) disponível(is)</p><form method="post" enctype="multipart/form-data">{% csrf_token %}<div class="field"><label>Nome completo</label>{{ form.nome }}{{ form.nome.errors }}</div><div class="row"><div class="field"><label>Telefone</label>{{ form.telefone }}{{ form.telefone.errors }}</div><div class="field"><label>E-mail</label>{{ form.email }}{{ form.email.errors }}</div></div><div class="row"><div class="field"><label>Data de nascimento</label>{{ form.data_nascimento }}{{ form.data_nascimento.errors }}</div><div class="field"><label>Categoria / modalidade</label>{{ form.modalidade }}{{ form.modalidade.errors }}</div></div><div class="field"><label>{{ form.militar }} Sou militar</label></div><div class="field"><label>Comprovante militar</label>{{ form.comprovante_militar }}{{ form.comprovante_militar.errors }}</div><div class="field"><label>Autorização do responsável — menor de 18</label>{{ form.autorizacao_responsavel }}{{ form.autorizacao_responsavel.errors }}</div><button class="btn btn-primary" type="submit">CONTINUAR</button></form></div></div></main></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>Inscrição</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <style>
+        .page{
+            padding:60px 0;
+            background:#f5f7f8;
+            min-height:100vh;
+        }
+
+        .card{
+            max-width:820px;
+            margin:auto;
+            background:#fff;
+            padding:35px;
+            border-radius:20px;
+        }
+
+        .row{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:18px;
+        }
+
+        .field{
+            margin:18px 0;
+        }
+
+        .field label{
+            display:block;
+            font-weight:bold;
+            font-size:13px;
+            margin-bottom:7px;
+        }
+
+        .field input,
+        .field select{
+            width:100%;
+            padding:12px;
+            border:1px solid #ccd5db;
+            border-radius:8px;
+        }
+
+        .errors{
+            color:#a22;
+            font-size:12px;
+        }
+
+        .slot{
+            background:#fff1a8;
+            padding:12px;
+            border-radius:8px;
+        }
+
+        @media(max-width:650px){
+            .row{
+                grid-template-columns:1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="container nav">
+        <a class="brand" href="/">
+            FA FEST AQUATHLON
+        </a>
+    </div>
+</header>
+
+<main class="page">
+
+    <div class="container">
+
+        <div class="card">
+
+            <h1>Dados do atleta</h1>
+
+            <p class="slot">
+                {{ vagas }} vaga(s) disponível(is)
+            </p>
+
+            <form method="post" enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                <div class="field">
+                    <label>Nome completo</label>
+                    {{ form.nome }}
+                    {{ form.nome.errors }}
+                </div>
+
+                <div class="row">
+
+                    <div class="field">
+                        <label>Telefone</label>
+                        {{ form.telefone }}
+                        {{ form.telefone.errors }}
+                    </div>
+
+                    <div class="field">
+                        <label>E-mail</label>
+                        {{ form.email }}
+                        {{ form.email.errors }}
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="field">
+                        <label>Data de nascimento</label>
+                        {{ form.data_nascimento }}
+                        {{ form.data_nascimento.errors }}
+                    </div>
+
+                    <div class="field">
+                        <label>Categoria / modalidade</label>
+                        {{ form.modalidade }}
+                        {{ form.modalidade.errors }}
+                    </div>
+
+                </div>
+
+                <div class="field">
+                    <label>Tamanho da camisa do kit</label>
+                    {{ form.tamanho_camisa }}
+                    {{ form.tamanho_camisa.errors }}
+                </div>
+
+                <div class="field">
+                    <label>
+                        {{ form.militar }}
+                        Sou militar
+                    </label>
+                </div>
+
+                <div class="field">
+                    <label>Comprovante militar</label>
+                    {{ form.comprovante_militar }}
+                    {{ form.comprovante_militar.errors }}
+                </div>
+
+                <div class="field">
+                    <label>
+                        Autorização do responsável — menor de 18
+                    </label>
+
+                    {{ form.autorizacao_responsavel }}
+                    {{ form.autorizacao_responsavel.errors }}
+                </div>
+
+                <button
+                    class="btn btn-primary"
+                    type="submit"
+                >
+                    CONTINUAR
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</main>
+
+</body>
+</html>

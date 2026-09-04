@@ -24,6 +24,26 @@ class Inscricao(models.Model):
     MINI = "MINI"
     SPRINT = "SPRINT"
 
+    PP = "PP"
+    P = "P"
+    M = "M"
+    G = "G"
+    GG = "GG"
+    XG = "XG"
+    X2G = "2XG"
+    X3G = "3XG"
+
+    TAMANHOS_CAMISA = [
+        (PP, "PP"),
+        (P, "P"),
+        (M, "M"),
+        (G, "G"),
+        (GG, "GG"),
+        (XG, "XG"),
+        (X2G, "2XG"),
+        (X3G, "3XG"),
+    ]
+
     MODALIDADES = [
         (
             MINI,
@@ -34,6 +54,14 @@ class Inscricao(models.Model):
             "Sprint — 1km natação + 5km corrida",
         ),
     ]
+
+    tamanho_camisa = models.CharField(
+        max_length=3,
+        choices=TAMANHOS_CAMISA,
+        verbose_name="Tamanho da camisa",
+        blank=True,
+        default="",
+    )
 
     PENDENTE = "PENDENTE"
     PAGO = "PAGO"

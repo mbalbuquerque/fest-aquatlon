@@ -18,6 +18,7 @@ class InscricaoAdmin(admin.ModelAdmin):
         "numero",
         "nome",
         "modalidade",
+        "tamanho_camisa",
         "idade",
         "lote",
         "valor_total",
@@ -29,6 +30,7 @@ class InscricaoAdmin(admin.ModelAdmin):
 
     list_filter = (
         "modalidade",
+        "tamanho_camisa",
         "status",
         "militar",
         "lote",
@@ -65,6 +67,7 @@ class InscricaoAdmin(admin.ModelAdmin):
                     "email",
                     "data_nascimento",
                     "modalidade",
+                    "tamanho_camisa",
                 )
             },
         ),
