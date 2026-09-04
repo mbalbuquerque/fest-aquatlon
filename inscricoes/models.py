@@ -5,9 +5,17 @@ from django.db import models
 from django.utils import timezone
 
 
-EVENT_DATE = timezone.datetime(2026, 12, 20).date()
-PROMO_END = timezone.datetime(2026, 9, 20).date()
-LOT_END = timezone.datetime(2026, 11, 5).date()
+EVENT_DATE = timezone.datetime(
+    2026, 12, 20
+).date()
+
+PROMO_END = timezone.datetime(
+    2026, 9, 20
+).date()
+
+LOT_END = timezone.datetime(
+    2026, 11, 7
+).date()
 
 MAX_SLOTS = 180
 
@@ -135,39 +143,51 @@ class Inscricao(models.Model):
         return idade
 
     def definir_valor(self):
-        if not self.data_nascimento:
-            return
+        """
+        Define lote, valor da inscrição e valor total
+        conforme a data e o perfil do atleta.
+        """
 
-        data = timezone.localdate()
+        hoje = timezone.localdate()
+
+        taxa_servico = Decimal("7.00")
+
         idade = self.idade_no_evento
 
-        if data > LOT_END:
-            raise ValidationError("As inscrições estão encerradas.")
+        # Inscrições encerradas após 07/11/2026
+        if hoje > LOT_END:
+            raise ValidationError(
+                "As inscrições estão encerradas."
+            )
 
         # LOTE PROMOCIONAL
-        if data <= PROMO_END:
+        # Até 20/09/2026
+        if hoje <= PROMO_END:
             self.lote = "Promocional"
-            self.valor_inscricao = Decimal("154.00")
-            self.valor_total = Decimal("154.00")
+            self.valor_inscricao = Decimal("165.00")
+            self.valor_total = (
+                self.valor_inscricao
+                + taxa_servico
+            )
             return
 
-        # SEGUNDO LOTE
-        self.lote = "Segundo lote"
+        # 2º LOTE
+        # 21/09/2026 até 07/11/2026
+        self.lote = "2º Lote"
 
-        # MILITAR
         if self.militar:
-            self.valor_inscricao = Decimal("162.00")
-            self.valor_total = Decimal("162.00")
+            self.valor_inscricao = Decimal("175.00")
 
-        # MENOR DE 17 OU 60+
         elif idade < 17 or idade >= 60:
-            self.valor_inscricao = Decimal("154.00")
-            self.valor_total = Decimal("154.00")
+            self.valor_inscricao = Decimal("165.00")
 
-        # 17 A 59
         else:
-            self.valor_inscricao = Decimal("174.00")
-            self.valor_total = Decimal("174.00")
+            self.valor_inscricao = Decimal("180.00")
+
+        self.valor_total = (
+            self.valor_inscricao
+            + taxa_servico
+        )
 
     def clean(self):
         idade = self.idade_no_evento
