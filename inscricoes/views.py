@@ -1,4 +1,7 @@
 from datetime import datetime
+from decimal import Decimal
+
+
 import hashlib
 import hmac
 import json
