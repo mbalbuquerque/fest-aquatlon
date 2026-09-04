@@ -1,4 +1,264 @@
-*{box-sizing:border-box}body{margin:0;font-family:Arial;color:#14212b}.container{width:min(1120px,calc(100% - 32px));margin:auto}.topbar{background:#061a2a;color:#fff;padding:15px}.nav{display:flex;justify-content:space-between;align-items:center}.brand{color:#fff;text-decoration:none;font-weight:900}.brand-mark{background:#ffd21a;color:#061a2a;padding:9px;border-radius:8px;margin-right:8px}.nav a{color:#fff;text-decoration:none;margin-left:18px}.btn{display:inline-block;padding:13px 20px;border-radius:9px;text-decoration:none;font-weight:900;border:0;cursor:pointer}.btn-primary{background:#ffd21a;color:#061a2a}.hero{position:relative;min-height:620px;color:#fff;display:flex;align-items:end}.hero-image,.hero-overlay{position:absolute;inset:0}.hero-image img{width:100%;height:100%;object-fit:cover}.hero-overlay{background:linear-gradient(90deg,#061a2add,#061a2a22)}.hero-content{position:relative;padding:90px 0}.hero h1{font-size:72px;line-height:.9}.hero h1 span{color:#ffd21a}.event-meta{display:flex;gap:15px;flex-wrap:wrap}.event-meta div{background:#0006;padding:15px;border-radius:10px}.event-meta strong,.event-meta small{display:block}.quick-info{background:#ffd21a;padding:20px}.info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}.section{padding:70px 0}.section-heading{text-align:center;margin-bottom:30px}.cards,.lots-grid,.kit-grid{display:grid;gap:20px}.cards{grid-template-columns:1fr 1fr}.lots-grid{grid-template-columns:1fr 1.3fr}.kit-grid{grid-template-columns:repeat(4,1fr)}.sport-card,.lot-card,.kit-item{padding:25px;border:1px solid #ddd;border-radius:15px;background:#fff}.featured{border:2px solid #ffd21a}.lots-section,.kit-section{background:#f5f7f8}.price-line{display:grid;grid-template-columns:90px 70px 1fr;padding:12px;border-bottom:1px solid #eee}.age-rule{margin-top:20px;padding:18px;background:#061a2a;color:#fff;border-radius:12px}.cta{background:#061a2a;color:#fff;padding:45px 0}.cta-inner{display:flex;justify-content:space-between;align-items:center}@media(max-width:800px){.nav nav{display:none}.info-grid,.kit-grid,.cards,.lots-grid{grid-template-columns:1fr 1fr}.hero h1{font-size:50px}}
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #14212b;
+    background: #fff;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+.container {
+    width: min(1120px, calc(100% - 32px));
+    margin: auto;
+}
+
+/* ========================================
+   TOPO
+======================================== */
+
+.topbar {
+    background: #061a2a;
+    color: #fff;
+    padding: 15px 0;
+}
+
+.nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.brand {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+}
+
+.brand-mark {
+    background: #ffd21a;
+    color: #061a2a;
+    padding: 9px;
+    border-radius: 8px;
+    margin-right: 8px;
+}
+
+.nav nav {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.nav a {
+    color: #fff;
+    text-decoration: none;
+}
+
+/* ========================================
+   BOTÕES
+======================================== */
+
+.btn {
+    display: inline-block;
+    padding: 13px 20px;
+    border-radius: 9px;
+    text-decoration: none;
+    font-weight: 900;
+    border: 0;
+    cursor: pointer;
+    text-align: center;
+}
+
+.btn-primary {
+    background: #ffd21a;
+    color: #061a2a;
+}
+
+/* ========================================
+   HERO
+======================================== */
+
+.hero {
+    position: relative;
+    min-height: 620px;
+    color: #fff;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
+.hero-image,
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+}
+
+.hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-overlay {
+    background: linear-gradient(90deg,
+            rgba(6, 26, 42, 0.87),
+            rgba(6, 26, 42, 0.13));
+}
+
+.hero-content {
+    position: relative;
+    padding: 90px 0;
+    width: 100%;
+}
+
+.hero h1 {
+    font-size: clamp(42px, 7vw, 72px);
+    line-height: 0.95;
+    margin: 0 0 25px;
+    max-width: 900px;
+}
+
+.hero h1 span {
+    color: #ffd21a;
+}
+
+.event-meta {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.event-meta div {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 15px;
+    border-radius: 10px;
+    min-width: 150px;
+}
+
+.event-meta strong,
+.event-meta small {
+    display: block;
+}
+
+/* ========================================
+   INFORMAÇÕES RÁPIDAS
+======================================== */
+
+.quick-info {
+    background: #ffd21a;
+    padding: 20px 0;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+/* ========================================
+   SEÇÕES
+======================================== */
+
+.section {
+    padding: 70px 0;
+}
+
+.section-heading {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.cards,
+.lots-grid,
+.kit-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lots-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+}
+
+.kit-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.sport-card,
+.lot-card,
+.kit-item {
+    padding: 25px;
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    background: #fff;
+    min-width: 0;
+}
+
+.featured {
+    border: 2px solid #ffd21a;
+}
+
+.lots-section,
+.kit-section {
+    background: #f5f7f8;
+}
+
+/* ========================================
+   PREÇOS
+======================================== */
+
+.price-line {
+    display: grid;
+    grid-template-columns: 90px 70px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+}
+
+.age-rule {
+    margin-top: 20px;
+    padding: 18px;
+    background: #061a2a;
+    color: #fff;
+    border-radius: 12px;
+}
+
+/* ========================================
+   CTA
+======================================== */
+
+.cta {
+    background: #061a2a;
+    color: #fff;
+    padding: 45px 0;
+}
+
+.cta-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+}
+
 /* ========================================
    ACESSO À ÁREA ADMINISTRATIVA
 ======================================== */
@@ -7,24 +267,247 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-
     padding: 8px 12px;
-
     border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 6px;
-
     font-size: 12px;
     font-weight: 600;
-
     text-transform: uppercase;
     text-decoration: none;
-
     opacity: 0.85;
-
     transition: 0.2s ease;
 }
 
 .admin-access:hover {
     opacity: 1;
     background: rgba(255, 255, 255, 0.12);
+}
+
+/* ========================================
+   TABLET
+======================================== */
+
+@media (max-width: 900px) {
+
+    .hero {
+        min-height: 560px;
+    }
+
+    .hero-content {
+        padding: 70px 0;
+    }
+
+    .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .kit-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .lots-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .cta-inner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ========================================
+   CELULAR
+======================================== */
+
+@media (max-width: 700px) {
+
+    .container {
+        width: min(100% - 24px, 1120px);
+    }
+
+    .topbar {
+        padding: 12px 0;
+    }
+
+    .nav {
+        gap: 10px;
+    }
+
+    .nav nav {
+        display: none;
+    }
+
+    .brand {
+        font-size: 14px;
+    }
+
+    .brand-mark {
+        padding: 7px;
+    }
+
+    .admin-access {
+        font-size: 10px;
+        padding: 7px 9px;
+        white-space: nowrap;
+    }
+
+    .hero {
+        min-height: 520px;
+        align-items: flex-end;
+    }
+
+    .hero-content {
+        padding: 55px 0 45px;
+    }
+
+    .hero h1 {
+        font-size: clamp(38px, 12vw, 52px);
+        line-height: 0.95;
+    }
+
+    .event-meta {
+        flex-direction: column;
+    }
+
+    .event-meta div {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .info-grid,
+    .cards,
+    .lots-grid,
+    .kit-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section {
+        padding: 50px 0;
+    }
+
+    .sport-card,
+    .lot-card,
+    .kit-item {
+        padding: 20px;
+    }
+
+    .price-line {
+        grid-template-columns: 1fr;
+        gap: 4px;
+        padding: 14px 0;
+    }
+
+    .cta {
+        padding: 35px 0;
+    }
+
+    .cta-inner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cta-inner .btn {
+        width: 100%;
+    }
+}
+
+/* ========================================
+   CELULARES PEQUENOS
+======================================== */
+
+@media (max-width: 420px) {
+
+    .container {
+        width: calc(100% - 20px);
+    }
+
+    .hero {
+        min-height: 500px;
+    }
+
+    .hero h1 {
+        font-size: 38px;
+    }
+
+    .hero-content {
+        padding: 45px 0 35px;
+    }
+
+    .section-heading h2 {
+        font-size: 26px;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 14px 16px;
+    }
+
+    .sport-card,
+    .lot-card,
+    .kit-item {
+        padding: 18px;
+    }
+}
+
+/* ========================================
+   CORREÇÕES FINAIS - HERO MOBILE
+======================================== */
+
+@media (max-width: 700px) {
+
+    .hero {
+        min-height: auto;
+        padding: 0;
+    }
+
+    .hero-content {
+        padding: 80px 0 45px;
+    }
+
+    .hero h1 {
+        font-size: 48px;
+        line-height: 0.92;
+        margin: 25px 0 25px;
+        max-width: 100%;
+        word-break: normal;
+    }
+
+    .hero h1 span {
+        display: block;
+    }
+
+    .hero-content p {
+        position: relative;
+        z-index: 2;
+    }
+
+    .event-meta {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-top: 25px;
+        width: 100%;
+    }
+
+    .event-meta div {
+        width: 100%;
+        min-width: 0;
+        padding: 15px;
+    }
+
+    .hero .btn {
+        width: 100%;
+        margin-top: 16px;
+    }
+}
+
+@media (max-width: 420px) {
+
+    .hero-content {
+        padding: 65px 0 35px;
+    }
+
+    .hero h1 {
+        font-size: 42px;
+    }
 }
