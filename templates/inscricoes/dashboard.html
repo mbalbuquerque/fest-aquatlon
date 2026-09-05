@@ -62,18 +62,15 @@
 
         .grid {
             display: grid;
-
-            grid-template-columns:
-                repeat(4, 1fr);
-
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 18px;
+            margin-top: 30px;
         }
 
         .three {
             display: grid;
 
-            grid-template-columns:
-                repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
 
             gap: 18px;
         }
@@ -81,8 +78,7 @@
         .two {
             display: grid;
 
-            grid-template-columns:
-                repeat(2, 1fr);
+            grid-template-columns: repeat(2, minmax(0, 1fr));
 
             gap: 18px;
         }
@@ -90,13 +86,12 @@
         .card {
             background: white;
             padding: 22px;
-
             border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, .06);
 
-            box-shadow:
-                0 8px 25px
-                rgba(0, 0, 0, .06);
-        }
+            min-width: 0;
+            width: 100%;
+}
 
         .label {
             font-size: 12px;
@@ -182,11 +177,14 @@
 
         .actions {
             display: flex;
-           
-
-            gap: 12px;
-
             flex-wrap: wrap;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .actions .button {
+            margin: 0;
+            white-space: nowrap;
         }
 
         .button {
@@ -250,6 +248,68 @@
 
         }
 
+        @media(max-width: 600px) {
+
+    .container,
+    .header-content {
+        width: calc(100% - 24px);
+    }
+
+    .grid,
+    .three,
+    .two {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .actions .button {
+        display: block;
+        width: 100%;
+        margin: 0;
+        text-align: center;
+        white-space: normal;
+    }
+
+    .card,
+    .sport {
+        width: 100%;
+        min-width: 0;
+        padding: 18px;
+    }
+
+    .number {
+        font-size: 28px;
+    }
+
+    .money {
+        font-size: 24px;
+        overflow-wrap: anywhere;
+    }
+
+    .header {
+        padding: 20px 0;
+    }
+
+    .header h1 {
+        font-size: 24px;
+    }
+
+    .section {
+        margin-top: 24px;
+    }
+
+    .section-title {
+        font-size: 20px;
+    }
+}
+
     </style>
 
 </head>
@@ -271,6 +331,8 @@
     </div>
 
 </header>
+
+<main class="container">
 
 <!-- ==============================
          ACESSOS
@@ -351,15 +413,6 @@
 
     </section>
 
-
-</main>
-
-</body>
-
-</html>
-
-
-<main class="container">
 <!-- ==============================
      ÚLTIMOS LANÇAMENTOS
 =============================== -->
@@ -489,23 +542,16 @@
 
 </section>
 
-
-
-
-
     <!-- ==============================
          CARDS PRINCIPAIS
     =============================== -->
 
     <section class="grid">
-        
-        
-
-
+     
+     
         <div class="card">
 
-            
-
+         
             <div class="label">
                 Inscritos
             </div>
