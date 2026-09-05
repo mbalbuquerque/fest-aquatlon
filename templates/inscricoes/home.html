@@ -88,6 +88,40 @@
     </div>
 </section>
 
+<section class="vagas-evento">
+    <div class="container">
+        <div class="vagas-card">
+
+            <span class="vagas-label">
+                VAGAS LIMITADAS
+            </span>
+
+            <h2>
+                Restam apenas
+                <strong>{{ vagas_restantes }}</strong>
+                vagas
+            </h2>
+
+            <div class="vagas-numeros">
+                <span>{{ total_inscritos }} inscritos</span>
+                <span>{{ total_vagas }} vagas totais</span>
+            </div>
+
+            <div class="vagas-progress">
+                <div
+                    class="vagas-progress-bar"
+                    style="width: {{ percentual_vagas }}%;">
+                </div>
+            </div>
+
+            <a href="{% url 'nova_inscricao' %}" class="btn btn-primary">
+                GARANTA SUA VAGA
+            </a>
+
+        </div>
+    </div>
+</section>
+
 
 <section class="quick-info">
 

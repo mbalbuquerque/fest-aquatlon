@@ -30,9 +30,27 @@ from .pagamentos import criar_preferencia_pagamento
 
 
 def home(request):
+    total_vagas = 180
+
+    total_inscritos = Inscricao.objects.exclude(
+        status=Inscricao.CANCELADO
+    ).count()
+
+    vagas_restantes = max(total_vagas - total_inscritos, 0)
+
+    percentual_vagas = round(
+        (total_inscritos / total_vagas) * 100
+    )
+
     return render(
         request,
         "inscricoes/home.html",
+        {
+            "total_vagas": total_vagas,
+            "total_inscritos": total_inscritos,
+            "vagas_restantes": vagas_restantes,
+            "percentual_vagas": percentual_vagas,
+        },
     )
 
 
