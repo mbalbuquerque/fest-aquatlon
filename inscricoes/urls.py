@@ -17,13 +17,13 @@ urlpatterns = [
     ),
 
     path(
-        "pagamento/<str:numero>/",
+        "pagamento/<uuid:token_publico>/",
         views.pagamento,
         name="pagamento",
     ),
 
     path(
-        "inscricao/sucesso/<str:numero>/",
+        "inscricao/sucesso/<uuid:token_publico>/",
         views.sucesso,
         name="sucesso",
     ),

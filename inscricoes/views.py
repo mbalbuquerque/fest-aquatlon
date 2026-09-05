@@ -88,8 +88,8 @@ def nova_inscricao(request):
 
         return redirect(
             "pagamento",
-            numero=inscricao.numero,
-        )
+            token_publico=inscricao.token_publico,
+)
 
     return render(
         request,
@@ -101,10 +101,11 @@ def nova_inscricao(request):
     )
 
 
-def pagamento(request, numero):
+def pagamento(request, token_publico):
+
     inscricao = get_object_or_404(
         Inscricao,
-        numero=numero,
+        token_publico=token_publico,
     )
 
     pagamento = (
@@ -163,10 +164,10 @@ def pagamento(request, numero):
     )
 
 
-def sucesso(request, numero):
+def sucesso(request, token_publico):
     inscricao = get_object_or_404(
         Inscricao,
-        numero=numero,
+        token_publico=token_publico,
     )
 
     return render(

@@ -1,4 +1,5 @@
 from decimal import Decimal
+import uuid
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -78,6 +79,12 @@ class Inscricao(models.Model):
         unique=True,
         blank=True,
     )
+    
+    token_publico = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+)
 
     nome = models.CharField(
         max_length=150,

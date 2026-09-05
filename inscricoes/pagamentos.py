@@ -48,20 +48,20 @@ def criar_preferencia_pagamento(inscricao):
             "email": inscricao.email,
         },
 
-        "back_urls": {
-            "success": (
-                f"{SITE_URL}/inscricao/sucesso/"
-                f"{inscricao.numero}/"
-            ),
-            "pending": (
-                f"{SITE_URL}/pagamento/"
-                f"{inscricao.numero}/"
-            ),
-            "failure": (
-                f"{SITE_URL}/pagamento/"
-                f"{inscricao.numero}/"
-            ),
-        },
+"back_urls": {
+    "success": (
+        f"{SITE_URL}/inscricao/sucesso/"
+        f"{inscricao.token_publico}/"
+    ),
+    "pending": (
+        f"{SITE_URL}/pagamento/"
+        f"{inscricao.token_publico}/"
+    ),
+    "failure": (
+        f"{SITE_URL}/pagamento/"
+        f"{inscricao.token_publico}/"
+    ),
+},
 
         "auto_return": "approved",
 

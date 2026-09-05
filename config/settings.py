@@ -4,12 +4,17 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY",
-    "dev-key-change-in-production"
-)
-
 DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
+
+SECRET_KEY = os.environ.get("SECRET_KEY")
+
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "dev-key-only-for-local-development"
+    else:
+        raise RuntimeError(
+            "SECRET_KEY não configurada no ambiente de produção."
+        )
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
@@ -95,6 +100,44 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# =========================================================
+# SEGURANÇA DE PRODUÇÃO
+# =========================================================
+
+if not DEBUG:
+    # Render funciona atrás de proxy HTTPS
+    SECURE_PROXY_SSL_HEADER = (
+        "HTTP_X_FORWARDED_PROTO",
+        "https",
+    )
+
+    # Força HTTPS
+    SECURE_SSL_REDIRECT = True
+
+    # Cookies somente via HTTPS
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+    # Impede acesso ao cookie de sessão via JavaScript
+    SESSION_COOKIE_HTTPONLY = True
+
+    # Política de SameSite
+    SESSION_COOKIE_SAMESITE = "Lax"
+    CSRF_COOKIE_SAMESITE = "Lax"
+
+    # HSTS
+    SECURE_HSTS_SECONDS = 3600
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = False
+
+    # Proteções adicionais do navegador
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
+    # Evita que o site seja carregado em iframe externo
+    X_FRAME_OPTIONS = "DENY"
