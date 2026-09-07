@@ -106,71 +106,6 @@ class InscricaoAdmin(admin.ModelAdmin):
         ),
     )
 
-    @admin.display(description="Confirmação pelo WhatsApp")
-    def botao_whatsapp(self, obj):
-
-        if not obj:
-            return "-"
-
-        # Só permite confirmação quando estiver pago
-        if obj.status != Inscricao.PAGO:
-            return format_html(
-                '<span style="color:#d97706;font-weight:600;">'
-                '⚠ Disponível após confirmação do pagamento'
-                '</span>'
-            )
-
-        telefone = "".join(
-            filter(str.isdigit, obj.telefone or "")
-        )
-
-        if not telefone:
-            return "Telefone não informado"
-
-        # Adiciona código do Brasil
-        if not telefone.startswith("55"):
-            telefone = f"55{telefone}"
-
-        mensagem = (
-            f"Olá, {obj.nome}! 👋\n\n"
-            f"Sua inscrição no FEST AQUATHLON 2026 "
-            f"está confirmada! ✅\n\n"
-            f"Nome: {obj.nome}\n"
-            f"Inscrição: {obj.numero}\n"
-            f"Modalidade: {obj.get_modalidade_display()}\n"
-            f"Tamanho da camisa: {obj.tamanho_camisa}\n\n"
-            f"📅 Data: 20 de dezembro de 2026\n"
-            f"📍 Local: Praia do Quartel - "
-            f"Bairro Novo, Olinda/PE\n\n"
-            f"Nos vemos na largada! 🏊‍♂️🏃‍♂️"
-        )
-
-        url = (
-            f"https://wa.me/{telefone}"
-            f"?text={quote(mensagem)}"
-        )
-
-        return format_html(
-            '''
-            <a href="{}"
-               target="_blank"
-               rel="noopener noreferrer"
-               style="
-                   display:inline-block;
-                   background:#25D366;
-                   color:#ffffff;
-                   padding:10px 18px;
-                   border-radius:7px;
-                   text-decoration:none;
-                   font-weight:700;
-                   font-size:13px;
-               ">
-               💬 ENVIAR CONFIRMAÇÃO PELO WHATSAPP
-            </a>
-            ''',
-            url,
-        )
-
     @admin.display(description="Idade")
     def idade(self, obj):
         return obj.idade_no_evento
@@ -183,6 +118,7 @@ class InscricaoAdmin(admin.ModelAdmin):
         except Pagamento.DoesNotExist:
             try:
                 link_pagamento = criar_preferencia_pagamento(obj)
+
             except Exception:
                 link_pagamento = (
                     "https://fest-aquatlon.onrender.com/"
@@ -214,7 +150,66 @@ class InscricaoAdmin(admin.ModelAdmin):
 
         return pagamento.get_status_display()
 
+    @admin.display(description="Confirmação pelo WhatsApp")
+    def botao_whatsapp(self, obj):
 
+        if not obj or not obj.pk:
+            return "-"
+
+        # O botão só aparece para inscrições pagas.
+        if obj.status != Inscricao.PAGO:
+            return format_html(
+                '<span style="color:#d97706;font-weight:600;">'
+                '⚠ Disponível após confirmação do pagamento'
+                '</span>'
+            )
+
+        telefone = "".join(
+            filter(str.isdigit, obj.telefone or "")
+        )
+
+        if not telefone:
+            return "Telefone não informado"
+
+        # Adiciona o código do Brasil quando necessário.
+        if not telefone.startswith("55"):
+            telefone = f"55{telefone}"
+
+        mensagem = (
+            f"Olá, {obj.nome}! 👋\n\n"
+            f"Sua inscrição no FEST AQUATHLON 2026 está confirmada! ✅\n\n"
+            f"Nome: {obj.nome}\n"
+            f"Inscrição: {obj.numero}\n"
+            f"Modalidade: {obj.get_modalidade_display()}\n"
+            f"Tamanho da camisa: {obj.tamanho_camisa}\n\n"
+            f"📅 Data: 20 de dezembro de 2026\n"
+            f"📍 Local: Praia do Quartel - Bairro Novo, Olinda/PE\n\n"
+            f"Nos vemos na largada! 🏊‍♂️🏃‍♂️"
+        )
+
+        url = (
+            f"https://wa.me/{telefone}"
+            f"?text={quote(mensagem)}"
+        )
+
+        return format_html(
+            '<a href="{}" '
+            'target="_blank" '
+            'rel="noopener noreferrer" '
+            'style="'
+            'display:inline-block;'
+            'background:#25D366;'
+            'color:#ffffff;'
+            'padding:10px 18px;'
+            'border-radius:7px;'
+            'text-decoration:none;'
+            'font-weight:700;'
+            'font-size:13px;'
+            '">'
+            '💬 ENVIAR CONFIRMAÇÃO PELO WHATSAPP'
+            '</a>',
+            url,
+        )
 @admin.register(Pagamento)
 class PagamentoAdmin(admin.ModelAdmin):
 
