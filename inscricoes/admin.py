@@ -19,17 +19,18 @@ from .pagamentos import criar_preferencia_pagamento
 class InscricaoAdmin(admin.ModelAdmin):
 
     list_display = (
-        "numero",
-        "nome",
-        "modalidade",
-        "idade",
-        "lote",
-        "valor_total",
-        "status_pagamento",
-        "status",
-        "militar",
-        "criado_em",
-    )
+    "numero",
+    "nome",
+    "modalidade",
+    "tamanho_camisa",
+    "idade",
+    "lote",
+    "valor_total",
+    "status_pagamento",
+    "status",
+    "militar",
+    "criado_em",
+)
 
     list_filter = (
         "modalidade",
