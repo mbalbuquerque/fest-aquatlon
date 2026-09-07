@@ -1,8 +1,9 @@
 from django.contrib import admin
 from django.utils import timezone
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from urllib.parse import quote
-from django.utils.html import format_html
 
 from .models import (
     Inscricao,
@@ -11,8 +12,8 @@ from .models import (
     ContaPagar,
     ContaReceber,
 )
-from .pagamentos import criar_preferencia_pagamento
 
+from .pagamentos import criar_preferencia_pagamento
 
 @admin.register(Inscricao)
 class InscricaoAdmin(admin.ModelAdmin):
@@ -158,11 +159,12 @@ class InscricaoAdmin(admin.ModelAdmin):
 
         # O botão só aparece para inscrições pagas.
         if obj.status != Inscricao.PAGO:
-            return format_html(
-                '<span style="color:#d97706;font-weight:600;">'
-                '⚠ Disponível após confirmação do pagamento'
-                '</span>'
-            )
+            return mark_safe(
+        '<span style="color:#d97706;font-weight:600;">'
+        '⚠ Disponível após confirmação do pagamento'
+        '</span>'
+    )
+           
 
         telefone = "".join(
             filter(str.isdigit, obj.telefone or "")
