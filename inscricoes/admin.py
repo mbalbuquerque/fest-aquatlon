@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.utils import timezone
 
+from urllib.parse import quote
+from django.utils.html import format_html
+
 from .models import (
     Inscricao,
     Pagamento,
@@ -18,7 +21,6 @@ class InscricaoAdmin(admin.ModelAdmin):
         "numero",
         "nome",
         "modalidade",
-        "tamanho_camisa",
         "idade",
         "lote",
         "valor_total",
@@ -30,7 +32,6 @@ class InscricaoAdmin(admin.ModelAdmin):
 
     list_filter = (
         "modalidade",
-        "tamanho_camisa",
         "status",
         "militar",
         "lote",
@@ -52,6 +53,7 @@ class InscricaoAdmin(admin.ModelAdmin):
         "lote",
         "valor_inscricao",
         "valor_total",
+        "botao_whatsapp",
         "criado_em",
         "atualizado_em",
     )
@@ -89,6 +91,7 @@ class InscricaoAdmin(admin.ModelAdmin):
                     "valor_inscricao",
                     "valor_total",
                     "status",
+                    "botao_whatsapp",
                 )
             },
         ),
@@ -102,6 +105,71 @@ class InscricaoAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    @admin.display(description="Confirmação pelo WhatsApp")
+    def botao_whatsapp(self, obj):
+
+        if not obj:
+            return "-"
+
+        # Só permite confirmação quando estiver pago
+        if obj.status != Inscricao.PAGO:
+            return format_html(
+                '<span style="color:#d97706;font-weight:600;">'
+                '⚠ Disponível após confirmação do pagamento'
+                '</span>'
+            )
+
+        telefone = "".join(
+            filter(str.isdigit, obj.telefone or "")
+        )
+
+        if not telefone:
+            return "Telefone não informado"
+
+        # Adiciona código do Brasil
+        if not telefone.startswith("55"):
+            telefone = f"55{telefone}"
+
+        mensagem = (
+            f"Olá, {obj.nome}! 👋\n\n"
+            f"Sua inscrição no FEST AQUATHLON 2026 "
+            f"está confirmada! ✅\n\n"
+            f"Nome: {obj.nome}\n"
+            f"Inscrição: {obj.numero}\n"
+            f"Modalidade: {obj.get_modalidade_display()}\n"
+            f"Tamanho da camisa: {obj.tamanho_camisa}\n\n"
+            f"📅 Data: 20 de dezembro de 2026\n"
+            f"📍 Local: Praia do Quartel - "
+            f"Bairro Novo, Olinda/PE\n\n"
+            f"Nos vemos na largada! 🏊‍♂️🏃‍♂️"
+        )
+
+        url = (
+            f"https://wa.me/{telefone}"
+            f"?text={quote(mensagem)}"
+        )
+
+        return format_html(
+            '''
+            <a href="{}"
+               target="_blank"
+               rel="noopener noreferrer"
+               style="
+                   display:inline-block;
+                   background:#25D366;
+                   color:#ffffff;
+                   padding:10px 18px;
+                   border-radius:7px;
+                   text-decoration:none;
+                   font-weight:700;
+                   font-size:13px;
+               ">
+               💬 ENVIAR CONFIRMAÇÃO PELO WHATSAPP
+            </a>
+            ''',
+            url,
+        )
 
     @admin.display(description="Idade")
     def idade(self, obj):
