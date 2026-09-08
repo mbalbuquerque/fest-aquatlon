@@ -1022,10 +1022,6 @@ def relatorios(request):
 
 @csrf_exempt
 def webhook_mercadopago(request):
-    """
-    Recebe notificações de pagamento do Mercado Pago
-    e atualiza automaticamente a inscrição correspondente.
-    """
 
     if request.method != "POST":
         return JsonResponse(
@@ -1037,10 +1033,7 @@ def webhook_mercadopago(request):
         body = json.loads(
             request.body.decode("utf-8") or "{}"
         )
-    except (
-        json.JSONDecodeError,
-        UnicodeDecodeError,
-    ):
+    except (json.JSONDecodeError, UnicodeDecodeError):
         body = {}
 
     tipo = (
@@ -1050,10 +1043,10 @@ def webhook_mercadopago(request):
 
     payment_id = (
         request.GET.get("data.id")
+        or request.GET.get("data_id")
         or body.get("data", {}).get("id")
     )
 
-    # Outros eventos não interessam neste endpoint.
     if tipo and tipo != "payment":
         return JsonResponse(
             {"received": True}
@@ -1070,65 +1063,84 @@ def webhook_mercadopago(request):
     payment_id = str(payment_id)
 
     # ==================================================
-    # VALIDAR ASSINATURA DO WEBHOOK
+    # VALIDAR ASSINATURA
     # ==================================================
 
     secret = os.getenv(
         "MERCADOPAGO_WEBHOOK_SECRET"
     )
 
-    if secret:
-        x_signature = request.headers.get(
-            "x-signature",
-            "",
+    if not secret:
+        return JsonResponse(
+            {
+                "detail":
+                    "Webhook secret não configurado."
+            },
+            status=503,
         )
 
-        x_request_id = request.headers.get(
-            "x-request-id",
-            "",
+    x_signature = request.headers.get(
+        "x-signature",
+        "",
+    )
+
+    x_request_id = request.headers.get(
+        "x-request-id",
+        "",
+    )
+
+    ts = None
+    v1 = None
+
+    for item in x_signature.split(","):
+        key, _, value = item.strip().partition("=")
+
+        if key == "ts":
+            ts = value
+
+        elif key == "v1":
+            v1 = value
+
+    if not ts or not v1:
+        return JsonResponse(
+            {"detail": "Assinatura inválida."},
+            status=401,
         )
 
-        ts = None
-        v1 = None
+    data_id_assinatura = (
+        request.GET.get("data.id")
+        or request.GET.get("data_id")
+    )
 
-        for item in x_signature.split(","):
-            key, _, value = item.strip().partition("=")
-
-            if key == "ts":
-                ts = value
-
-            elif key == "v1":
-                v1 = value
-
-        if not ts or not v1:
-            return JsonResponse(
-                {"detail": "Assinatura inválida."},
-                status=401,
-            )
-
-        manifest = (
-            f"id:{payment_id};"
-            f"request-id:{x_request_id};"
-            f"ts:{ts};"
+    if not data_id_assinatura:
+        return JsonResponse(
+            {"detail": "data.id ausente na assinatura."},
+            status=401,
         )
 
-        generated = hmac.new(
-            secret.encode("utf-8"),
-            manifest.encode("utf-8"),
-            hashlib.sha256,
-        ).hexdigest()
+    manifest = (
+        f"id:{data_id_assinatura};"
+        f"request-id:{x_request_id};"
+        f"ts:{ts};"
+    )
 
-        if not hmac.compare_digest(
-            generated,
-            v1,
-        ):
-            return JsonResponse(
-                {"detail": "Assinatura inválida."},
-                status=401,
-            )
+    generated = hmac.new(
+        secret.encode("utf-8"),
+        manifest.encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+
+    if not hmac.compare_digest(
+        generated,
+        v1,
+    ):
+        return JsonResponse(
+            {"detail": "Assinatura inválida."},
+            status=401,
+        )
 
     # ==================================================
-    # CONSULTAR PAGAMENTO NA API DO MERCADO PAGO
+    # CONSULTAR MERCADO PAGO
     # ==================================================
 
     access_token = os.getenv(
@@ -1139,7 +1151,7 @@ def webhook_mercadopago(request):
         return JsonResponse(
             {
                 "detail":
-                    "MERCADOPAGO_ACCESS_TOKEN não configurado.",
+                    "MERCADOPAGO_ACCESS_TOKEN não configurado."
             },
             status=500,
         )
@@ -1164,7 +1176,7 @@ def webhook_mercadopago(request):
         return JsonResponse(
             {
                 "detail":
-                    "Falha ao consultar o Mercado Pago.",
+                    "Falha ao consultar o Mercado Pago."
             },
             status=502,
         )
@@ -1204,38 +1216,43 @@ def webhook_mercadopago(request):
             }
         )
 
-    # ==================================================
-    # PAGAMENTO LOCAL
-    # ==================================================
-
-    pagamento, _ = (
-        Pagamento.objects.get_or_create(
-            inscricao=inscricao,
-            defaults={
-                "valor": inscricao.valor_total,
-                "link_pagamento": (
-                    "https://www.mercadopago.com.br/"
-                ),
-                "status": Pagamento.PENDENTE,
-            },
-        )
+    pagamento, _ = Pagamento.objects.get_or_create(
+        inscricao=inscricao,
+        defaults={
+            "valor": inscricao.valor_total,
+            "link_pagamento":
+                "https://www.mercadopago.com.br/",
+            "status": Pagamento.PENDENTE,
+        },
     )
 
     # ==================================================
-    # VALIDAÇÃO DO VALOR
+    # VALIDAR VALOR
     # ==================================================
 
-    valor_mp = data.get("transaction_amount")
+    valor_mp = data.get(
+        "transaction_amount"
+    )
 
     try:
-        valor_mp = Decimal(str(valor_mp))
+        valor_mp = Decimal(
+            str(valor_mp)
+        )
     except Exception:
         valor_mp = None
 
-    if (
-        valor_mp is not None
-        and valor_mp != pagamento.valor
-    ):
+    if valor_mp is None:
+        return JsonResponse(
+            {
+                "received": True,
+                "payment_id": payment_id,
+                "detail":
+                    "Pagamento sem valor válido.",
+            },
+            status=400,
+        )
+
+    if valor_mp != inscricao.valor_total:
         return JsonResponse(
             {
                 "received": True,
@@ -1247,10 +1264,12 @@ def webhook_mercadopago(request):
         )
 
     # ==================================================
-    # ATUALIZAÇÃO
+    # ATUALIZAR PAGAMENTO E INSCRIÇÃO
     # ==================================================
 
-    status_mp = data.get("status")
+    status_mp = data.get(
+        "status"
+    )
 
     pagamento.identificador_transacao = (
         payment_id
@@ -1269,29 +1288,40 @@ def webhook_mercadopago(request):
         if not pagamento.pago_em:
             pagamento.pago_em = timezone.now()
 
-        if inscricao.status != Inscricao.PAGO:
-            inscricao.status = Inscricao.PAGO
-
-            inscricao.save(
-                update_fields=[
-                    "status",
-                    "atualizado_em",
-                ]
-            )
+        inscricao.status = Inscricao.PAGO
 
     elif status_mp in (
         "cancelled",
         "rejected",
     ):
+
         pagamento.status = Pagamento.CANCELADO
+        pagamento.pago_em = None
+
+        inscricao.status = Inscricao.CANCELADO
 
     elif status_mp == "expired":
+
         pagamento.status = Pagamento.EXPIRADO
+        pagamento.pago_em = None
+
+        inscricao.status = Inscricao.PENDENTE
 
     else:
+
         pagamento.status = Pagamento.PENDENTE
+        pagamento.pago_em = None
+
+        inscricao.status = Inscricao.PENDENTE
 
     pagamento.save()
+
+    inscricao.save(
+        update_fields=[
+            "status",
+            "atualizado_em",
+        ]
+    )
 
     return JsonResponse(
         {
