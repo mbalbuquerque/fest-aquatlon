@@ -89,7 +89,7 @@ def nova_inscricao(request):
         return redirect(
             "pagamento",
             token_publico=inscricao.token_publico,
-)
+        )
 
     return render(
         request,
@@ -1066,28 +1066,16 @@ def webhook_mercadopago(request):
     # VALIDAR ASSINATURA
     # ==================================================
 
-    secret = os.getenv(
-        "MERCADOPAGO_WEBHOOK_SECRET"
-    )
+    secret = os.getenv("MERCADOPAGO_WEBHOOK_SECRET")
 
     if not secret:
         return JsonResponse(
-            {
-                "detail":
-                    "Webhook secret não configurado."
-            },
+            {"detail": "MERCADOPAGO_WEBHOOK_SECRET não configurado."},
             status=503,
         )
 
-    x_signature = request.headers.get(
-        "x-signature",
-        "",
-    )
-
-    x_request_id = request.headers.get(
-        "x-request-id",
-        "",
-    )
+    x_signature = request.headers.get("x-signature", "")
+    x_request_id = request.headers.get("x-request-id", "")
 
     ts = None
     v1 = None
@@ -1097,7 +1085,6 @@ def webhook_mercadopago(request):
 
         if key == "ts":
             ts = value
-
         elif key == "v1":
             v1 = value
 
@@ -1112,17 +1099,18 @@ def webhook_mercadopago(request):
         or request.GET.get("data_id")
     )
 
-    if not data_id_assinatura:
-        return JsonResponse(
-            {"detail": "data.id ausente na assinatura."},
-            status=401,
-        )
+    manifest_parts = []
 
-    manifest = (
-        f"id:{data_id_assinatura};"
-        f"request-id:{x_request_id};"
-        f"ts:{ts};"
-    )
+    if data_id_assinatura:
+        manifest_parts.append(f"id:{data_id_assinatura};")
+
+    if x_request_id:
+        manifest_parts.append(f"request-id:{x_request_id};")
+
+    if ts:
+        manifest_parts.append(f"ts:{ts};")
+
+    manifest = "".join(manifest_parts)
 
     generated = hmac.new(
         secret.encode("utf-8"),
@@ -1130,10 +1118,7 @@ def webhook_mercadopago(request):
         hashlib.sha256,
     ).hexdigest()
 
-    if not hmac.compare_digest(
-        generated,
-        v1,
-    ):
+    if not hmac.compare_digest(generated, v1):
         return JsonResponse(
             {"detail": "Assinatura inválida."},
             status=401,
