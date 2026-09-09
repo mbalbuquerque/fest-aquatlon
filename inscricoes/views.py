@@ -1524,18 +1524,19 @@ def exportar_excel(request):
     )
 
     cabecalho = [
-        "Número",
-        "Nome",
-        "Telefone",
-        "E-mail",
-        "Nascimento",
-        "Idade",
-        "Modalidade",
-        "Militar",
-        "Lote",
-        "Valor",
-        "Status",
-    ]
+    "Número",
+    "Nome",
+    "Telefone",
+    "E-mail",
+    "Nascimento",
+    "Idade",
+    "Modalidade",
+    "Tamanho da camisa",
+    "Militar",
+    "Lote",
+    "Valor",
+    "Status",
+]
 
     aba_inscricoes.append(cabecalho)
 
@@ -1551,18 +1552,19 @@ def exportar_excel(request):
     for atleta in atletas:
 
         aba_inscricoes.append([
-            atleta.numero,
-            atleta.nome,
-            atleta.telefone,
-            atleta.email,
-            atleta.data_nascimento,
-            atleta.idade_no_evento,
-            atleta.get_modalidade_display(),
-            "Sim" if atleta.militar else "Não",
-            atleta.lote,
-            float(atleta.valor_total),
-            atleta.get_status_display(),
-        ])
+    atleta.numero,
+    atleta.nome,
+    atleta.telefone,
+    atleta.email,
+    atleta.data_nascimento,
+    atleta.idade_no_evento,
+    atleta.get_modalidade_display(),
+    atleta.tamanho_camisa,
+    "Sim" if atleta.militar else "Não",
+    atleta.lote,
+    float(atleta.valor_total),
+    atleta.get_status_display(),
+])
 
     # -------------------------------------------------
     # ABA CONTAS A RECEBER

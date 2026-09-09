@@ -123,6 +123,15 @@
             color: white;
         }
 
+        .button.excel {
+    background: #198754;
+    color: white;
+}
+
+.button.excel:hover {
+    background: #146c43;
+}
+
         @media(max-width:900px) {
 
             .grid,
@@ -513,10 +522,11 @@
         </a>
 
         <a
-    href="/exportar-excel/"
-    class="button"
+    <a
+    href="{% url 'exportar_excel' %}"
+    class="button excel"
 >
-    EXPORTAR EXCEL
+    📊 BAIXAR EXCEL
 </a>
 
     </div>
