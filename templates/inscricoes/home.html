@@ -13,329 +13,345 @@
 
 <body>
 
-<header class="topbar">
-    <div class="container nav">
+    <header class="topbar">
+        <div class="container nav">
 
-        <a class="brand" href="/">
-            <span class="brand-mark">FA</span>
-            FEST AQUATHLON
-        </a>
-
-        <nav>
-            <a href="#evento">Evento</a>
-            <a href="#modalidades">Modalidades</a>
-            <a href="#valores">Valores</a>
-            <a href="#kit">Kit</a>
-
-            <!-- ACESSO ADMINISTRATIVO -->
-            <a href="/admin/" class="admin-access">
-                🔐 Área Administrativa
+            <a class="brand" href="/">
+                <span class="brand-mark">FA</span>
+                FEST AQUATHLON
             </a>
 
-            <a class="btn btn-primary" href="{% url 'nova_inscricao' %}">
-                INSCREVA-SE
-            </a>
-        </nav>
+            <nav>
+                <a href="#evento">Evento</a>
+                <a href="#modalidades">Modalidades</a>
+                <a href="#valores">Valores</a>
+                <a href="#kit">Kit</a>
 
-    </div>
-</header>
+                <!-- ACESSO ADMINISTRATIVO -->
+                <a href="/admin/" class="admin-access">
+                    🔐 Área Administrativa
+                </a>
+
+                <a class="btn btn-primary" href="{% url 'nova_inscricao' %}">
+                    INSCREVA-SE
+                </a>
+            </nav>
+
+        </div>
+    </header>
 
 
-<section class="hero" id="evento">
+    <section class="hero" id="evento">
 
-    <div class="hero-image">
-        <img src="{% static 'images/hero-evento.svg' %}" alt="Fest Aquathlon">
-    </div>
+        <div class="hero-image">
+            <img src="{% static 'images/hero-evento.svg' %}" alt="Fest Aquathlon">
+        </div>
 
-    <div class="hero-overlay"></div>
+        <div class="hero-overlay"></div>
 
-    <div class="container hero-content">
+        <div class="container hero-content">
 
-        <small>NATAÇÃO + CORRIDA</small>
+            <small>NATAÇÃO + CORRIDA</small>
 
-        <h1>
-            FEST<br>
-            <span>AQUATHLON</span>
-        </h1>
+            <h1>
+                FEST<br>
+                <span>AQUATHLON</span>
+            </h1>
 
-        <p>Evento esportivo festivo com premiação.</p>
+            <p>Evento esportivo festivo com premiação.</p>
 
-        <div class="event-meta">
+            <div class="event-meta">
+
+                <div>
+                    <strong>20 DE DEZEMBRO</strong>
+                    <small>2026</small>
+                </div>
+
+                <div>
+                    <strong>PRAIA DO QUARTEL</strong>
+                    <small>BAIRRO NOVO • OLINDA</small>
+                </div>
+
+                <div>
+                    <strong>06:00</strong>
+                    <small>PRIMEIRA LARGADA</small>
+                </div>
+
+            </div>
+
+            <p>
+                <a class="btn btn-primary" href="{% url 'nova_inscricao' %}">
+                    GARANTIR MINHA VAGA
+                </a>
+            </p>
+
+        </div>
+    </section>
+
+    <section class="vagas-evento">
+        <div class="container">
+            <div class="vagas-card">
+
+                <span class="vagas-label">
+                    VAGAS LIMITADAS
+                </span>
+
+                <h2>
+                    Restam apenas
+                    <strong>{{ vagas_restantes }}</strong>
+                    vagas
+                </h2>
+
+                <div class="vagas-numeros">
+                    <span>{{ total_inscritos }} inscritos</span>
+                    <span>{{ total_vagas }} vagas totais</span>
+                </div>
+
+                <div class="vagas-progress">
+                    <div class="vagas-progress-bar" style="width: {{ percentual_vagas }}%;">
+                    </div>
+                </div>
+
+                <a href="{% url 'nova_inscricao' %}" class="btn btn-primary">
+                    GARANTA SUA VAGA
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+
+    <section class="quick-info">
+
+        <div class="container info-grid">
 
             <div>
-                <strong>20 DE DEZEMBRO</strong>
-                <small>2026</small>
+                🏊
+                <b>
+                    Mini Sprint<br>
+                    <small>500m + 2,5km</small>
+                </b>
             </div>
 
             <div>
-                <strong>PRAIA DO QUARTEL</strong>
-                <small>BAIRRO NOVO • OLINDA</small>
+                🏃
+                <b>
+                    Sprint<br>
+                    <small>1km + 5km</small>
+                </b>
             </div>
 
             <div>
-                <strong>06:00</strong>
-                <small>PRIMEIRA LARGADA</small>
+                🏅
+                <b>
+                    Premiação<br>
+                    <small>Evento festivo</small>
+                </b>
+            </div>
+
+            <div>
+                🎟️
+                <b>
+                    210 vagas<br>
+                    <small>Limitadas</small>
+                </b>
             </div>
 
         </div>
 
-        <p>
-            <a class="btn btn-primary" href="{% url 'nova_inscricao' %}">
-                GARANTIR MINHA VAGA
-            </a>
-        </p>
+    </section>
 
-    </div>
-</section>
 
-<section class="vagas-evento">
-    <div class="container">
-        <div class="vagas-card">
+    <section class="section" id="modalidades">
 
-            <span class="vagas-label">
-                VAGAS LIMITADAS
-            </span>
+        <div class="container">
+
+            <div class="section-heading">
+                <small>ESCOLHA SEU DESAFIO</small>
+                <h2>Modalidades</h2>
+            </div>
+
+            <div class="cards">
+
+                <article class="sport-card">
+                    <h3>Mini Sprint</h3>
+                    <p>500 metros de natação + 2,5 km de corrida.</p>
+                </article>
+
+                <article class="sport-card featured">
+                    <h3>Sprint</h3>
+                    <p>1 km de natação + 5 km de corrida.</p>
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="section lots-section" id="valores">
+
+        <div class="container">
+
+            <div class="section-heading">
+                <small>INSCRIÇÕES</small>
+                <h2>Lotes e valores</h2>
+            </div>
+
+            <div class="lots-grid">
+
+                <article class="lot-card">
+
+                    <b>LOTE PROMOCIONAL</b>
+
+                    <h3>04/09 a 20/09</h3>
+
+                    <strong>
+                        R$ 165,00 + R$ 7,00 de taxa
+                    </strong>
+
+                </article>
+
+
+                <article class="lot-card">
+
+                    <b>2º LOTE — 21/09 a 07/11</b>
+
+                    <p>
+                        R$ 165,00 + R$ 7,00 de taxa —
+                        até 16 anos / 60 anos ou mais
+                    </p>
+
+                    <p>
+                        R$ 180,00 + R$ 7,00 de taxa —
+                        17 a 59 anos
+                    </p>
+
+                    <p>
+                        R$ 175,00 + R$ 7,00 de taxa —
+                        militares comprovados
+                    </p>
+
+                </article>
+
+            </div>
+
+
+            <div class="age-rule">
+
+                <b>12+</b>
+
+                Idade mínima: 12 anos completos em 2026.
+                Menores de 18 precisam de autorização.
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="section kit-section" id="kit">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <small>KIT ATLETA</small>
+
+                <h2>Incluso na inscrição</h2>
+
+            </div>
+
+
+            <div class="kit-grid">
+
+                <div class="kit-item">
+                    🎽 Camisa
+                </div>
+
+                <div class="kit-item">
+                    🏊 Touca
+                </div>
+
+                <div class="kit-item">
+                    🪪 Pulseira
+                </div>
+
+                <div class="kit-item">
+                    🛡️ Seguro atleta
+                </div>
+
+                <div class="kit-item">
+                    🔢 Numeração
+                </div>
+
+                <div class="kit-item">
+                    🏃 Número de peito
+                </div>
+
+                <div class="kit-item">
+                    ⏱️ Chip
+                </div>
+
+                <div class="kit-item">
+                    🏅 Medalha
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="regulamento-section">
+        <div class="container">
+            <div class="regulamento-card">
+                <h2>Regulamento do Evento</h2>
+
+                <p>
+                    Consulte todas as regras, orientações, categorias,
+                    horários e informações oficiais do FEST AQUATHLON 2026.
+                </p>
+
+                <a href="{% static 'documentos/regulamento-fest-aquathlon-2026.pdf' %}" target="_blank"
+                    rel="noopener noreferrer" class="btn-regulamento">
+                    📄 VER REGULAMENTO COMPLETO
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="cta">
+
+        <div class="container cta-inner">
 
             <h2>
-                Restam apenas
-                <strong>{{ vagas_restantes }}</strong>
-                vagas
+                Garanta sua participação.
             </h2>
 
-            <div class="vagas-numeros">
-                <span>{{ total_inscritos }} inscritos</span>
-                <span>{{ total_vagas }} vagas totais</span>
-            </div>
+            <a class="btn btn-primary" href="{% url 'nova_inscricao' %}">
 
-            <div class="vagas-progress">
-                <div
-                    class="vagas-progress-bar"
-                    style="width: {{ percentual_vagas }}%;">
-                </div>
-            </div>
+                INSCREVA-SE
 
-            <a href="{% url 'nova_inscricao' %}" class="btn btn-primary">
-                GARANTA SUA VAGA
             </a>
 
-        </div>
-    </div>
-</section>
 
 
-<section class="quick-info">
+            <a href="https://wa.me/5581997735661" target="_blank">Fale conosco no WhatsApp</a>
 
-    <div class="container info-grid">
-
-        <div>
-            🏊
-            <b>
-                Mini Sprint<br>
-                <small>500m + 2,5km</small>
-            </b>
-        </div>
-
-        <div>
-            🏃
-            <b>
-                Sprint<br>
-                <small>1km + 5km</small>
-            </b>
-        </div>
-
-        <div>
-            🏅
-            <b>
-                Premiação<br>
-                <small>Evento festivo</small>
-            </b>
-        </div>
-
-        <div>
-            🎟️
-            <b>
-                210 vagas<br>
-                <small>Limitadas</small>
-            </b>
-        </div>
-
-    </div>
-
-</section>
+            <a href="https://wa.me/5581996271475" target="_blank">Fale com o desenvolvedor</a>
 
 
-<section class="section" id="modalidades">
 
-    <div class="container">
-
-        <div class="section-heading">
-            <small>ESCOLHA SEU DESAFIO</small>
-            <h2>Modalidades</h2>
-        </div>
-
-        <div class="cards">
-
-            <article class="sport-card">
-                <h3>Mini Sprint</h3>
-                <p>500 metros de natação + 2,5 km de corrida.</p>
-            </article>
-
-            <article class="sport-card featured">
-                <h3>Sprint</h3>
-                <p>1 km de natação + 5 km de corrida.</p>
-            </article>
 
         </div>
 
-    </div>
-
-</section>
-
-
-<section class="section lots-section" id="valores">
-
-    <div class="container">
-
-        <div class="section-heading">
-            <small>INSCRIÇÕES</small>
-            <h2>Lotes e valores</h2>
-        </div>
-
-        <div class="lots-grid">
-
-            <article class="lot-card">
-
-    <b>LOTE PROMOCIONAL</b>
-
-    <h3>04/09 a 20/09</h3>
-
-    <strong>
-        R$ 165,00 + R$ 7,00 de taxa
-    </strong>
-
-</article>
-
-
-<article class="lot-card">
-
-    <b>2º LOTE — 21/09 a 07/11</b>
-
-    <p>
-        R$ 165,00 + R$ 7,00 de taxa —
-        até 16 anos / 60 anos ou mais
-    </p>
-
-    <p>
-        R$ 180,00 + R$ 7,00 de taxa —
-        17 a 59 anos
-    </p>
-
-    <p>
-        R$ 175,00 + R$ 7,00 de taxa —
-        militares comprovados
-    </p>
-
-</article>
-
-        </div>
-
-
-        <div class="age-rule">
-
-            <b>12+</b>
-
-            Idade mínima: 12 anos completos em 2026.
-            Menores de 18 precisam de autorização.
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<section class="section kit-section" id="kit">
-
-    <div class="container">
-
-        <div class="section-heading">
-
-            <small>KIT ATLETA</small>
-
-            <h2>Incluso na inscrição</h2>
-
-        </div>
-
-
-        <div class="kit-grid">
-
-            <div class="kit-item">
-                🎽 Camisa
-            </div>
-
-            <div class="kit-item">
-                🏊 Touca
-            </div>
-
-            <div class="kit-item">
-                🪪 Pulseira
-            </div>
-
-            <div class="kit-item">
-                🛡️ Seguro atleta
-            </div>
-
-            <div class="kit-item">
-                🔢 Numeração
-            </div>
-
-            <div class="kit-item">
-                🏃 Número de peito
-            </div>
-
-            <div class="kit-item">
-                ⏱️ Chip
-            </div>
-
-            <div class="kit-item">
-                🏅 Medalha
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-<section class="cta">
-
-    <div class="container cta-inner">
-
-        <h2>
-            Garanta sua participação.
-        </h2>
-
-        <a class="btn btn-primary"
-           href="{% url 'nova_inscricao' %}">
-
-            INSCREVA-SE
-
-        </a>
-
-        
-
-        <a href="https://wa.me/5581997735661" target="_blank">Fale conosco no WhatsApp</a>
-
-        <a href="https://wa.me/5581996271475" target="_blank">Fale com o desenvolvedor</a>
-
-
-        
-
-    </div>
-
-</section>
+    </section>
 
 
 </body>
+
 </html>

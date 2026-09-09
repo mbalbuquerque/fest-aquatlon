@@ -642,3 +642,41 @@ img {
         width: 100%;
     }
 }
+
+.regulamento-section {
+    padding: 50px 20px;
+    background: #f5f7fa;
+}
+
+.regulamento-card {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 35px;
+    background: #ffffff;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.regulamento-card h2 {
+    margin-bottom: 15px;
+}
+
+.regulamento-card p {
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.btn-regulamento {
+    display: inline-block;
+    padding: 14px 24px;
+    border-radius: 8px;
+    background: #061a2a;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.btn-regulamento:hover {
+    opacity: 0.9;
+}
