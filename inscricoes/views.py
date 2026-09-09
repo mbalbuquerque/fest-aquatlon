@@ -189,6 +189,15 @@ def dashboard(request):
 
     hoje = timezone.localdate()
 
+def excel_datetime(valor):
+    if valor is None:
+        return None
+
+    if timezone.is_aware(valor):
+        valor = timezone.localtime(valor)
+
+    return valor.replace(tzinfo=None)
+
     # =====================================================
     # INSCRIÇÕES
     # =====================================================
@@ -1594,7 +1603,7 @@ def exportar_excel(request):
             float(conta.valor),
             conta.vencimento,
             conta.get_status_display(),
-            conta.recebido_em,
+            excel_datetime(conta.recebido_em),
         ])
 
     # -------------------------------------------------
@@ -1629,7 +1638,7 @@ def exportar_excel(request):
             float(conta.valor),
             conta.vencimento,
             conta.get_status_display(),
-            conta.pago_em,
+            excel_datetime(conta.pago_em),
         ])
 
     # -------------------------------------------------
@@ -1665,8 +1674,8 @@ def exportar_excel(request):
             pagamento.get_status_display(),
             pagamento.metodo,
             pagamento.identificador_transacao,
-            pagamento.criado_em,
-            pagamento.pago_em,
+            excel_datetime(pagamento.criado_em),
+            excel_datetime(pagamento.pago_em),
         ])
 
     # -------------------------------------------------
