@@ -30,7 +30,7 @@ from .pagamentos import criar_preferencia_pagamento
 
 
 def home(request):
-    total_vagas = 200
+    total_vagas = 210
 
     total_inscritos = Inscricao.objects.exclude(
         status=Inscricao.CANCELADO
