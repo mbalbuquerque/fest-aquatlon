@@ -61,7 +61,7 @@ def nova_inscricao(request):
     """
 
     vagas = (
-        200
+        210
         - Inscricao.objects.exclude(
             status=Inscricao.CANCELADO
         ).count()
@@ -189,14 +189,6 @@ def dashboard(request):
 
     hoje = timezone.localdate()
 
-def excel_datetime(valor):
-    if valor is None:
-        return None
-
-    if timezone.is_aware(valor):
-        valor = timezone.localtime(valor)
-
-    return valor.replace(tzinfo=None)
 
     # =====================================================
     # INSCRIÇÕES
@@ -398,7 +390,7 @@ def excel_datetime(valor):
     # VAGAS
     # =====================================================
 
-    vagas_totais = 180
+    vagas_totais = 210
 
     vagas_restantes = max(
         vagas_totais - total_inscricoes,
@@ -1330,6 +1322,17 @@ def webhook_mercadopago(request):
 def exportar_excel(request):
 
     hoje = timezone.localdate()
+
+    def excel_datetime(valor):
+        if valor is None:
+            return None
+
+        if timezone.is_aware(valor):
+            valor = timezone.localtime(valor)
+
+        return valor.replace(tzinfo=None)
+
+    # restante do exportar_excel...
 
     # -------------------------------------------------
     # DADOS
