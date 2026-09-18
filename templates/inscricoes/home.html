@@ -192,64 +192,70 @@
 
     <section class="section lots-section" id="valores">
 
-        <div class="container">
+    <div class="container">
 
-            <div class="section-heading">
-                <small>INSCRIÇÕES</small>
-                <h2>Lotes e valores</h2>
-            </div>
+        <div class="section-heading">
+            <small>INSCRIÇÕES</small>
+            <h2>Lotes e valores</h2>
+        </div>
 
-            <div class="lots-grid">
+        <div class="lots-grid">
 
-                <article class="lot-card">
+            <article class="lot-card">
 
-                    <b>LOTE PROMOCIONAL</b>
+                <b>LOTE PROMOCIONAL</b>
 
-                    <h3>04/09 a 20/09</h3>
+                <h3>04/09 a 20/09</h3>
 
-                    <strong>
-                        R$ 165,00 + R$ 7,00 de taxa
-                    </strong>
+                <strong>
+                    R$ 165,00 + R$ 7,00 de taxa
+                </strong>
 
-                </article>
-
-
-                <article class="lot-card">
-
-                    <b>2º LOTE — 21/09 a 07/11</b>
-
-                    <p>
-                        R$ 165,00 + R$ 7,00 de taxa —
-                        até 16 anos / 60 anos ou mais
-                    </p>
-
-                    <p>
-                        R$ 180,00 + R$ 7,00 de taxa —
-                        17 a 59 anos
-                    </p>
-
-                    <p>
-                        R$ 175,00 + R$ 7,00 de taxa —
-                        militares comprovados
-                    </p>
-
-                </article>
-
-            </div>
+            </article>
 
 
-            <div class="age-rule">
+            <article class="lot-card">
 
-                <b>12+</b>
+                <b>2º LOTE — 21/09 a 07/11</b>
 
-                Idade mínima: 12 anos completos em 2026.
-                Menores de 18 precisam de autorização.
+                <p>
+                    R$ 165,00 + R$ 7,00 de taxa —
+                    até 16 anos / 60 anos ou mais
+                </p>
 
-            </div>
+                <p>
+                    R$ 180,00 + R$ 7,00 de taxa —
+                    17 a 59 anos
+                </p>
+
+                <p>
+                    R$ 175,00 + R$ 7,00 de taxa —
+                    militares comprovados
+                </p>
+
+                <p>
+                    ♿ Atletas PCD —
+                    conforme condições previstas no
+                    Regulamento PCD
+                </p>
+
+            </article>
 
         </div>
 
-    </section>
+
+        <div class="age-rule">
+
+            <b>12+</b>
+
+            Idade mínima: 12 anos completos em 2026.
+            Menores de 18 precisam de autorização.
+
+        </div>
+
+    </div>
+
+</section>
 
 
     <section class="section kit-section" id="kit">
@@ -305,23 +311,107 @@
 
     </section>
 
-    <section class="regulamento-section">
-        <div class="container">
+    <!-- =====================================================
+     REGULAMENTOS
+===================================================== -->
+<section class="regulamento-section" id="regulamento">
+
+    <div class="container">
+
+        <div class="regulamento-header">
+            <span class="regulamento-tag">
+                DOCUMENTOS OFICIAIS
+            </span>
+
+            <h2>
+                Regulamentos do FEST AQUATHLON 2026
+            </h2>
+
+            <p>
+                Consulte as regras oficiais do evento antes
+                de realizar sua inscrição.
+            </p>
+        </div>
+
+        <div class="regulamentos-grid">
+
+            <!-- REGULAMENTO GERAL -->
             <div class="regulamento-card">
-                <h2>Regulamento do Evento</h2>
+
+                <div class="regulamento-icon">
+                    📄
+                </div>
+
+                <h3>
+                    Regulamento Geral
+                </h3>
 
                 <p>
-                    Consulte todas as regras, orientações, categorias,
-                    horários e informações oficiais do FEST AQUATHLON 2026.
+                    Informações sobre participação,
+                    modalidades, inscrições, horários,
+                    premiação e demais regras do
+                    FEST AQUATHLON 2026.
                 </p>
 
-                <a href="{% static 'documentos/regulamento-fest-aquathlon-2026.pdf' %}" target="_blank"
-                    rel="noopener noreferrer" class="btn-regulamento">
-                    📄 VER REGULAMENTO COMPLETO
+                <a
+                    href="{% static 'documentos/regulamento-fest-aquathlon-2026.pdf' %}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn-regulamento"
+                >
+                    VER REGULAMENTO GERAL
                 </a>
+
             </div>
+
+
+            <!-- REGULAMENTO PCD -->
+            <div class="regulamento-card pcd">
+
+                <div class="regulamento-icon">
+                    ♿
+                </div>
+
+                <span class="pcd-badge">
+                    CATEGORIA PCD
+                </span>
+
+                <h3>
+                    Regulamento PCD
+                </h3>
+
+                <p>
+                    Consulte as regras específicas,
+                    critérios de participação e
+                    documentação aplicáveis aos
+                    atletas PCD.
+                </p>
+
+                <a
+                    href="{% static 'documentos/regulamento-fest-aquathlon-pcd-2026.pdf' %}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn-regulamento"
+                >
+                    VER REGULAMENTO PCD
+                </a>
+
+            </div>
+
         </div>
-    </section>
+
+        <div class="regulamento-aviso">
+
+            <strong>Importante:</strong>
+            ao realizar a inscrição, o participante
+            declara estar ciente das regras e condições
+            estabelecidas nos regulamentos do evento.
+
+        </div>
+
+    </div>
+
+</section>
 
 
     <section class="cta">

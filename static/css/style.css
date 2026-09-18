@@ -680,3 +680,212 @@ img {
 .btn-regulamento:hover {
     opacity: 0.9;
 }
+
+/* =====================================================
+   REGULAMENTOS
+===================================================== */
+
+.regulamento-section {
+    padding: 80px 20px;
+    background: #f5f7fa;
+}
+
+.regulamento-header {
+    max-width: 760px;
+    margin: 0 auto 40px;
+    text-align: center;
+}
+
+.regulamento-tag {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 7px 14px;
+
+    background: #ffd21a;
+    color: #061a2a;
+
+    border-radius: 50px;
+
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.regulamento-header h2 {
+    margin: 0 0 15px;
+
+    color: #061a2a;
+
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 900;
+}
+
+.regulamento-header p {
+    max-width: 650px;
+    margin: auto;
+
+    color: #5c6770;
+    line-height: 1.6;
+}
+
+.regulamentos-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+
+    max-width: 900px;
+    margin: auto;
+
+    gap: 25px;
+}
+
+.regulamento-card {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 32px;
+
+    background: #ffffff;
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 10px 30px
+        rgba(0, 0, 0, 0.08);
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease;
+}
+
+.regulamento-card:hover {
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 15px 35px
+        rgba(0, 0, 0, 0.12);
+}
+
+.regulamento-card.pcd {
+    border-top: 5px solid #ffd21a;
+}
+
+.regulamento-icon {
+    margin-bottom: 15px;
+
+    font-size: 40px;
+}
+
+.regulamento-card h3 {
+    margin: 0 0 12px;
+
+    color: #061a2a;
+
+    font-size: 23px;
+    font-weight: 900;
+}
+
+.regulamento-card p {
+    flex-grow: 1;
+
+    margin-bottom: 25px;
+
+    color: #5c6770;
+
+    line-height: 1.6;
+}
+
+.pcd-badge {
+    position: absolute;
+
+    top: 20px;
+    right: 20px;
+
+    padding: 6px 10px;
+
+    background: #061a2a;
+    color: #ffffff;
+
+    border-radius: 20px;
+
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.btn-regulamento {
+    display: block;
+
+    width: 100%;
+
+    padding: 14px 18px;
+
+    background: #ffd21a;
+    color: #061a2a;
+
+    border-radius: 10px;
+
+    text-align: center;
+    text-decoration: none;
+
+    font-size: 13px;
+    font-weight: 900;
+
+    transition: .2s;
+}
+
+.btn-regulamento:hover {
+    background: #061a2a;
+    color: #ffffff;
+}
+
+.regulamento-aviso {
+    max-width: 900px;
+
+    margin: 25px auto 0;
+
+    padding: 18px 22px;
+
+    background: #061a2a;
+    color: #ffffff;
+
+    border-radius: 12px;
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* =====================================================
+   RESPONSIVO
+===================================================== */
+
+@media (max-width: 700px) {
+
+    .regulamento-section {
+        padding: 55px 16px;
+    }
+
+    .regulamentos-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .regulamento-card {
+        padding: 25px;
+    }
+
+    .pcd-badge {
+        position: static;
+        display: inline-block;
+        align-self: flex-start;
+        margin-bottom: 12px;
+    }
+
+}
+
+.field-help {
+    display: block;
+    margin-top: 7px;
+    color: #66757f;
+    font-size: 12px;
+    line-height: 1.4;
+}

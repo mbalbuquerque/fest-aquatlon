@@ -18,7 +18,7 @@ LOT_END = timezone.datetime(
     2026, 11, 7
 ).date()
 
-MAX_SLOTS = 180
+MAX_SLOTS = 210
 
 
 class Inscricao(models.Model):
@@ -84,7 +84,7 @@ class Inscricao(models.Model):
         default=uuid.uuid4,
         unique=True,
         editable=False,
-)
+    )
 
     nome = models.CharField(
         max_length=150,
@@ -111,6 +111,22 @@ class Inscricao(models.Model):
         upload_to="comprovantes/militares/",
         blank=True,
         null=True,
+    )
+
+    # =====================================================
+    # ATLETA PCD
+    # =====================================================
+
+    pcd = models.BooleanField(
+        default=False,
+        verbose_name="Atleta PCD",
+    )
+
+    comprovante_pcd = models.FileField(
+        upload_to="comprovantes/pcd/",
+        blank=True,
+        null=True,
+        verbose_name="Documento comprobatório PCD",
     )
 
     autorizacao_responsavel = models.FileField(
@@ -184,26 +200,44 @@ class Inscricao(models.Model):
         """
 
         hoje = timezone.localdate()
-
         taxa_servico = Decimal("7.00")
-
         idade = self.idade_no_evento
 
         # Inscrições encerradas após 07/11/2026
         if hoje > LOT_END:
-            raise ValidationError(
-                "As inscrições estão encerradas."
-            )
+            raise ValidationError("As inscrições estão encerradas.")
+
+        # =====================================================
+        # ATLETA PCD
+        # =====================================================
+        # Regulamento PCD:
+        # lote único de 21/09/2026 a 05/11/2026
+        # R$ 100,00 + R$ 7,00 de taxa
+        if self.pcd:
+            inicio_pcd = timezone.datetime(2026, 9, 21).date()
+            fim_pcd = timezone.datetime(2026, 11, 5).date()
+
+            if hoje < inicio_pcd:
+                raise ValidationError(
+                    "As inscrições PCD começam em 21/09/2026."
+                )
+
+            if hoje > fim_pcd:
+                raise ValidationError(
+                    "As inscrições PCD estão encerradas."
+                )
+
+            self.lote = "PCD — Lote Único"
+            self.valor_inscricao = Decimal("100.00")
+            self.valor_total = self.valor_inscricao + taxa_servico
+            return
 
         # LOTE PROMOCIONAL
         # Até 20/09/2026
         if hoje <= PROMO_END:
             self.lote = "Promocional"
             self.valor_inscricao = Decimal("165.00")
-            self.valor_total = (
-                self.valor_inscricao
-                + taxa_servico
-            )
+            self.valor_total = self.valor_inscricao + taxa_servico
             return
 
         # 2º LOTE
@@ -212,17 +246,12 @@ class Inscricao(models.Model):
 
         if self.militar:
             self.valor_inscricao = Decimal("175.00")
-
         elif idade < 17 or idade >= 60:
             self.valor_inscricao = Decimal("165.00")
-
         else:
             self.valor_inscricao = Decimal("180.00")
 
-        self.valor_total = (
-            self.valor_inscricao
-            + taxa_servico
-        )
+        self.valor_total = self.valor_inscricao + taxa_servico
 
     def clean(self):
         idade = self.idade_no_evento
@@ -245,6 +274,10 @@ class Inscricao(models.Model):
             raise ValidationError(
                 "Militares devem apresentar documento comprobatório."
             )
+        if self.pcd and not self.comprovante_pcd:
+            raise ValidationError(
+                "Atletas PCD devem apresentar documento comprobatório."
+    )
 
     def save(self, *args, **kwargs):
         creating = not self.pk

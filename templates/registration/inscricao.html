@@ -144,11 +144,42 @@
                     </label>
                 </div>
 
-                <div class="field">
-                    <label>Comprovante militar</label>
-                    {{ form.comprovante_militar }}
-                    {{ form.comprovante_militar.errors }}
-                </div>
+                <div class="field" id="campo-comprovante-militar">
+    <label>Comprovante militar</label>
+
+    {{ form.comprovante_militar }}
+    {{ form.comprovante_militar.errors }}
+
+    <small class="field-help">
+        Obrigatório para inscrição com condição de militar.
+    </small>
+</div>
+
+                <!-- =====================================================
+     ATLETA PCD
+===================================================== -->
+
+<div class="field">
+    <label>
+        {{ form.pcd }}
+        Sou atleta PCD
+    </label>
+    {{ form.pcd.errors }}
+</div>
+
+<div class="field" id="campo-comprovante-pcd">
+    <label>
+        Documento comprobatório PCD
+    </label>
+
+    {{ form.comprovante_pcd }}
+    {{ form.comprovante_pcd.errors }}
+
+    <small class="field-help">
+        Anexe a documentação comprobatória conforme
+        o Regulamento PCD do FEST AQUATHLON 2026.
+    </small>
+</div>
 
                 <div class="field">
                     <label>
@@ -173,6 +204,41 @@
     </div>
 
 </main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
+    function configurarCampoCondicional(
+        checkboxId,
+        campoId
+    ) {
+        const checkbox = document.getElementById(checkboxId);
+        const campo = document.getElementById(campoId);
+
+        if (!checkbox || !campo) {
+            return;
+        }
+
+        function atualizar() {
+            campo.style.display =
+                checkbox.checked ? "block" : "none";
+        }
+
+        checkbox.addEventListener("change", atualizar);
+
+        atualizar();
+    }
+
+    configurarCampoCondicional(
+        "id_militar",
+        "campo-comprovante-militar"
+    );
+
+    configurarCampoCondicional(
+        "id_pcd",
+        "campo-comprovante-pcd"
+    );
+
+});
+</script>
 </body>
 </html>

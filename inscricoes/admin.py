@@ -30,6 +30,7 @@ class InscricaoAdmin(admin.ModelAdmin):
     "status",
     "militar",
     "criado_em",
+    "pcd",
 )
 
     list_filter = (
@@ -76,15 +77,17 @@ class InscricaoAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Condição especial",
-            {
-                "fields": (
-                    "militar",
-                    "comprovante_militar",
-                    "autorizacao_responsavel",
-                )
-            },
+    "Condição especial",
+    {
+        "fields": (
+            "militar",
+            "comprovante_militar",
+            "pcd",
+            "comprovante_pcd",
+            "autorizacao_responsavel",
         ),
+    },
+),
         (
             "Financeiro",
             {

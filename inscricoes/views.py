@@ -425,7 +425,7 @@ def dashboard(request):
         .count()
     )
 
-    # =====================================================
+        # =====================================================
     # PERFIL DOS PARTICIPANTES
     # =====================================================
 
@@ -435,7 +435,6 @@ def dashboard(request):
     total_militares = 0
 
     for atleta in inscritos.iterator():
-
         idade = atleta.idade_no_evento
 
         if idade is None:
@@ -450,6 +449,20 @@ def dashboard(request):
 
         if atleta.militar:
             total_militares += 1
+
+    # =====================================================
+    # ATLETAS PCD
+    # =====================================================
+
+    total_pcd = (
+        inscritos
+        .filter(pcd=True)
+        .count()
+    )
+
+    # =====================================================
+    # PERCENTUAL DE PAGAMENTOS
+    # =====================================================
 
     percentual_pagamentos = (
         total_pagas
@@ -502,6 +515,7 @@ def dashboard(request):
         "idade_17_59": idade_17_59,
         "idade_60_mais": idade_60_mais,
         "total_militares": total_militares,
+        "total_pcd": total_pcd,
         "percentual_pagamentos": round(
             percentual_pagamentos,
             1,
@@ -509,7 +523,6 @@ def dashboard(request):
         "ultimas_contas_pagar": ultimas_contas_pagar,
         "ultimas_contas_receber": ultimas_contas_receber,
     }
-   
 
     return render(
         request,
@@ -1021,6 +1034,7 @@ def relatorios(request):
         contexto,
     )
 
+
 @csrf_exempt
 def webhook_mercadopago(request):
 
@@ -1313,11 +1327,12 @@ def webhook_mercadopago(request):
         {
             "received": True,
             "payment_id": payment_id,
-            "external_reference":
-                external_reference,
+            "external_reference": external_reference,
             "status": status_mp,
         }
     )
+
+
 @staff_member_required
 def exportar_excel(request):
 
@@ -1359,6 +1374,13 @@ def exportar_excel(request):
         .filter(
             status=Pagamento.PENDENTE
         )
+        .count()
+    )
+    
+    total_pcd = (
+        Inscricao.objects
+        .exclude(status=Inscricao.CANCELADO)
+        .filter(pcd=True)
         .count()
     )
 
@@ -1504,6 +1526,7 @@ def exportar_excel(request):
         ("Despesas previstas", float(despesas_previstas)),
         ("Saldo atual", float(saldo_atual)),
         ("Resultado previsto", float(resultado_previsto)),
+        ("Total de PCD", total_pcd),
     ]
 
     linha = 4
@@ -1543,8 +1566,8 @@ def exportar_excel(request):
     "Nascimento",
     "Idade",
     "Modalidade",
-    "Tamanho da camisa",
     "Militar",
+    "PCD",
     "Lote",
     "Valor",
     "Status",
@@ -1564,19 +1587,19 @@ def exportar_excel(request):
     for atleta in atletas:
 
         aba_inscricoes.append([
-    atleta.numero,
-    atleta.nome,
-    atleta.telefone,
-    atleta.email,
-    atleta.data_nascimento,
-    atleta.idade_no_evento,
-    atleta.get_modalidade_display(),
-    atleta.tamanho_camisa,
-    "Sim" if atleta.militar else "Não",
-    atleta.lote,
-    float(atleta.valor_total),
-    atleta.get_status_display(),
-])
+        atleta.numero,
+        atleta.nome,
+        atleta.telefone,
+        atleta.email,
+        atleta.data_nascimento,
+        atleta.idade_no_evento,
+        atleta.get_modalidade_display(),
+        "Sim" if atleta.militar else "Não",
+        "Sim" if atleta.pcd else "Não",
+        atleta.lote,
+        float(atleta.valor_total),
+        atleta.get_status_display(),
+    ])
 
     # -------------------------------------------------
     # ABA CONTAS A RECEBER

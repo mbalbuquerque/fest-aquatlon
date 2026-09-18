@@ -15,12 +15,104 @@ class InscricaoForm(forms.ModelForm):
             "data_nascimento",
             "modalidade",
             "tamanho_camisa",
+
+            # Militar
             "militar",
             "comprovante_militar",
+
+            # PCD
+            "pcd",
+            "comprovante_pcd",
+
+            # Menor de idade
             "autorizacao_responsavel",
         ]
 
         widgets = {
+            "data_nascimento": forms.DateInput(
+                attrs={
+                    "type": "date",
+                }
+            ),
+
+            "tamanho_camisa": forms.Select(),
+
+            "militar": forms.CheckboxInput(),
+
+            "pcd": forms.CheckboxInput(),
+        }
+
+        labels = {
+            "militar": "Sou militar",
+            "comprovante_militar": "Comprovante militar",
+
+            "pcd": "Sou atleta PCD",
+            "comprovante_pcd": "Documento comprobatório PCD",
+
+            "autorizacao_responsavel":
+                "Autorização do responsável",
+        }
+
+        help_texts = {
+            "comprovante_militar":
+                "Obrigatório para participantes que "
+                "selecionarem a condição de militar.",
+
+            "comprovante_pcd":
+                "Obrigatório para participantes que "
+                "selecionarem a condição de atleta PCD.",
+
+            "autorizacao_responsavel":
+                "Obrigatório para participantes menores "
+                "de 18 anos.",
+        }
+
+    def clean(self):
+
+        cleaned_data = super().clean()
+
+        militar = cleaned_data.get("militar")
+        comprovante_militar = cleaned_data.get(
+            "comprovante_militar"
+        )
+
+        pcd = cleaned_data.get("pcd")
+        comprovante_pcd = cleaned_data.get(
+            "comprovante_pcd"
+        )
+
+        # ==============================================
+        # MILITAR
+        # ==============================================
+
+        if militar and not comprovante_militar:
+
+            self.add_error(
+                "comprovante_militar",
+                (
+                    "Para inscrição como militar, "
+                    "é obrigatório anexar o comprovante."
+                ),
+            )
+
+        # ==============================================
+        # PCD
+        # ==============================================
+
+        if pcd and not comprovante_pcd:
+
+            self.add_error(
+                "comprovante_pcd",
+                (
+                    "Para inscrição como atleta PCD, "
+                    "é obrigatório anexar o documento "
+                    "comprobatório."
+                ),
+            )
+
+        return cleaned_data
+
+    widgets = {
             "data_nascimento": forms.DateInput(attrs={"type": "date"}),
             "tamanho_camisa": forms.Select(),
         }
