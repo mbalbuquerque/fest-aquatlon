@@ -7,6 +7,10 @@ import hmac
 import json
 import os
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 import requests
 
 from django.contrib.admin.views.decorators import staff_member_required
@@ -94,7 +98,6 @@ def nova_inscricao(request):
 
     vagas = vagas_geral + vagas_pcd
 
-    # Evento completamente lotado
     if vagas <= 0:
         return render(
             request,
@@ -107,69 +110,44 @@ def nova_inscricao(request):
     )
 
     if request.method == "POST" and form.is_valid():
-
         inscricao = form.save(commit=False)
 
-        # =====================================================
-        # VERIFICA A VAGA DA CATEGORIA
-        # =====================================================
-
         if inscricao.pcd and vagas_pcd <= 0:
-
             form.add_error(
                 "pcd",
-                "As 50 vagas destinadas aos atletas PCD "
-                "foram preenchidas."
+                "As 50 vagas destinadas aos atletas PCD foram preenchidas.",
             )
-
         elif not inscricao.pcd and vagas_geral <= 0:
-
             form.add_error(
                 None,
-                "As 210 vagas destinadas ao público geral "
-                "foram preenchidas."
+                "As 210 vagas destinadas ao público geral foram preenchidas.",
             )
-
         else:
-
-            # =================================================
-            # SALVA A INSCRIÇÃO
-            # =================================================
-
             try:
                 inscricao.save()
-
             except ValidationError as exc:
+                logger.warning(
+                    "Erro de validação na inscrição: %s",
+                    exc,
+                )
 
-                # Mostra a regra de negócio no formulário
-                # em vez de retornar erro 500.
                 if hasattr(exc, "message_dict"):
-
                     for campo, mensagens in exc.message_dict.items():
-
                         for mensagem in mensagens:
-
                             if campo in form.fields:
-                                form.add_error(
-                                    campo,
-                                    mensagem,
-                                )
+                                form.add_error(campo, mensagem)
                             else:
-                                form.add_error(
-                                    None,
-                                    mensagem,
-                                )
-
+                                form.add_error(None, mensagem)
                 else:
-
                     for mensagem in exc.messages:
-                        form.add_error(
-                            None,
-                            mensagem,
-                        )
-
+                        form.add_error(None, mensagem)
+            except Exception:
+                logger.exception("ERRO INESPERADO AO SALVAR INSCRICAO")
+                form.add_error(
+                    None,
+                    "Não foi possível concluir a inscrição. Tente novamente em alguns instantes.",
+                )
             else:
-
                 return redirect(
                     "pagamento",
                     token_publico=inscricao.token_publico,
@@ -206,6 +184,9 @@ def pagamento(request, token_publico):
             )
 
         except requests.RequestException as exc:
+            logger.exception(
+                "ERRO AO CRIAR PREFERENCIA NO MERCADO PAGO"
+)
             return render(
                 request,
                 "registration/pagamento.html",
@@ -221,6 +202,10 @@ def pagamento(request, token_publico):
             )
 
         except RuntimeError as exc:
+
+            logger.exception(
+                "ERRO AO CRIAR PREFERENCIA NO MERCADO PAGO"
+)
             return render(
                 request,
                 "registration/pagamento.html",
@@ -1461,7 +1446,7 @@ def exportar_excel(request):
         )
         .count()
     )
-    
+
     total_pcd = (
         Inscricao.objects
         .exclude(status=Inscricao.CANCELADO)

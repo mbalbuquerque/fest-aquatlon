@@ -275,19 +275,45 @@ class Inscricao(models.Model):
             raise ValidationError(
                 "Militares devem apresentar documento comprobatório."
             )
+
         if self.pcd and not self.comprovante_pcd:
             raise ValidationError(
                 "Atletas PCD devem apresentar documento comprobatório."
-    )
+            )
 
     def save(self, *args, **kwargs):
-        creating = not self.pk
-
-        if creating:
-            super().save(*args, **kwargs)
-            self.numero = f"FA26-{self.pk:04d}"
-
+        # =====================================================
+        # DEFINE VALORES DA INSCRIÇÃO
+        # =====================================================
         self.definir_valor()
+
+        # =====================================================
+        # GERA NÚMERO ÚNICO DA INSCRIÇÃO
+        # =====================================================
+        if not self.numero:
+            ultima_inscricao = (
+                Inscricao.objects
+                .exclude(numero="")
+                .order_by("-id")
+                .first()
+            )
+
+            if ultima_inscricao and ultima_inscricao.numero:
+                try:
+                    ultimo_numero = int(
+                        ultima_inscricao.numero.split("-")[-1]
+                    )
+                except (ValueError, IndexError):
+                    ultimo_numero = 0
+            else:
+                ultimo_numero = 0
+
+            proximo_numero = ultimo_numero + 1
+            self.numero = f"FA26-{proximo_numero:04d}"
+
+        # =====================================================
+        # SALVA UMA ÚNICA VEZ
+        # =====================================================
         super().save(*args, **kwargs)
 
 
