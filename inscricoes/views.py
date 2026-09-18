@@ -27,6 +27,7 @@ from .models import (
     ContaReceber,
 )
 from .pagamentos import criar_preferencia_pagamento
+from django.core.exceptions import ValidationError
 
 
 def home(request):
@@ -60,13 +61,40 @@ def nova_inscricao(request):
     Salva a inscrição e redireciona para o pagamento.
     """
 
-    vagas = (
-        210
-        - Inscricao.objects.exclude(
-            status=Inscricao.CANCELADO
-        ).count()
+    # =====================================================
+    # CONTROLE DE VAGAS
+    # 210 vagas público geral + 50 vagas PCD
+    # =====================================================
+
+    inscricoes_ativas = Inscricao.objects.exclude(
+        status=Inscricao.CANCELADO
     )
 
+    ocupadas_geral = (
+        inscricoes_ativas
+        .filter(pcd=False)
+        .count()
+    )
+
+    ocupadas_pcd = (
+        inscricoes_ativas
+        .filter(pcd=True)
+        .count()
+    )
+
+    vagas_geral = max(
+        210 - ocupadas_geral,
+        0,
+    )
+
+    vagas_pcd = max(
+        50 - ocupadas_pcd,
+        0,
+    )
+
+    vagas = vagas_geral + vagas_pcd
+
+    # Evento completamente lotado
     if vagas <= 0:
         return render(
             request,
@@ -80,16 +108,72 @@ def nova_inscricao(request):
 
     if request.method == "POST" and form.is_valid():
 
-        inscricao = form.save(
-            commit=False
-        )
+        inscricao = form.save(commit=False)
 
-        inscricao.save()
+        # =====================================================
+        # VERIFICA A VAGA DA CATEGORIA
+        # =====================================================
 
-        return redirect(
-            "pagamento",
-            token_publico=inscricao.token_publico,
-        )
+        if inscricao.pcd and vagas_pcd <= 0:
+
+            form.add_error(
+                "pcd",
+                "As 50 vagas destinadas aos atletas PCD "
+                "foram preenchidas."
+            )
+
+        elif not inscricao.pcd and vagas_geral <= 0:
+
+            form.add_error(
+                None,
+                "As 210 vagas destinadas ao público geral "
+                "foram preenchidas."
+            )
+
+        else:
+
+            # =================================================
+            # SALVA A INSCRIÇÃO
+            # =================================================
+
+            try:
+                inscricao.save()
+
+            except ValidationError as exc:
+
+                # Mostra a regra de negócio no formulário
+                # em vez de retornar erro 500.
+                if hasattr(exc, "message_dict"):
+
+                    for campo, mensagens in exc.message_dict.items():
+
+                        for mensagem in mensagens:
+
+                            if campo in form.fields:
+                                form.add_error(
+                                    campo,
+                                    mensagem,
+                                )
+                            else:
+                                form.add_error(
+                                    None,
+                                    mensagem,
+                                )
+
+                else:
+
+                    for mensagem in exc.messages:
+                        form.add_error(
+                            None,
+                            mensagem,
+                        )
+
+            else:
+
+                return redirect(
+                    "pagamento",
+                    token_publico=inscricao.token_publico,
+                )
 
     return render(
         request,
@@ -97,9 +181,10 @@ def nova_inscricao(request):
         {
             "form": form,
             "vagas": vagas,
+            "vagas_geral": vagas_geral,
+            "vagas_pcd": vagas_pcd,
         },
     )
-
 
 def pagamento(request, token_publico):
 
@@ -1559,19 +1644,19 @@ def exportar_excel(request):
     )
 
     cabecalho = [
-    "Número",
-    "Nome",
-    "Telefone",
-    "E-mail",
-    "Nascimento",
-    "Idade",
-    "Modalidade",
-    "Militar",
-    "PCD",
-    "Lote",
-    "Valor",
-    "Status",
-]
+        "Número",
+        "Nome",
+        "Telefone",
+        "E-mail",
+        "Nascimento",
+        "Idade",
+        "Modalidade",
+        "Militar",
+        "PCD",
+        "Lote",
+        "Valor",
+        "Status",
+    ]
 
     aba_inscricoes.append(cabecalho)
 
@@ -1585,21 +1670,20 @@ def exportar_excel(request):
     )
 
     for atleta in atletas:
-
         aba_inscricoes.append([
-        atleta.numero,
-        atleta.nome,
-        atleta.telefone,
-        atleta.email,
-        atleta.data_nascimento,
-        atleta.idade_no_evento,
-        atleta.get_modalidade_display(),
-        "Sim" if atleta.militar else "Não",
-        "Sim" if atleta.pcd else "Não",
-        atleta.lote,
-        float(atleta.valor_total),
-        atleta.get_status_display(),
-    ])
+            atleta.numero,
+            atleta.nome,
+            atleta.telefone,
+            atleta.email,
+            atleta.data_nascimento,
+            atleta.idade_no_evento,
+            atleta.get_modalidade_display(),
+            "Sim" if atleta.militar else "Não",
+            "Sim" if atleta.pcd else "Não",
+            atleta.lote,
+            float(atleta.valor_total),
+            atleta.get_status_display(),
+        ])
 
     # -------------------------------------------------
     # ABA CONTAS A RECEBER

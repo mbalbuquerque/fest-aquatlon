@@ -18,7 +18,8 @@ LOT_END = timezone.datetime(
     2026, 11, 7
 ).date()
 
-MAX_SLOTS = 210
+MAX_SLOTS_GERAL = 210
+MAX_SLOTS_PCD = 50
 
 
 class Inscricao(models.Model):
